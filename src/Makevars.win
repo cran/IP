@@ -1,0 +1,12 @@
+PKG_LIBS= -L../windows/libidn-1.30/lib${R_ARCH} -lws2_32 -lidn -lRiconv
+
+PKG_CFLAGS= \
+	-I../windows/libidn-1.30/include 
+
+all: clean winlibs
+
+clean:
+	rm -f $(SHLIB) $(OBJECTS)
+
+winlibs:
+	"${R_HOME}/bin${R_ARCH_BIN}/Rscript.exe" "../tools/winlibs.R"

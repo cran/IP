@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Introduction to the IP Package</title>
+
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+a.sourceLine { display: inline-block; line-height: 1.25; }
+a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
+a.sourceLine:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode { white-space: pre; position: relative; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+code.sourceCode { white-space: pre-wrap; }
+a.sourceLine { text-indent: -1em; padding-left: 1em; }
+}
+pre.numberSource a.sourceLine
+  { position: relative; left: -4em; }
+pre.numberSource a.sourceLine::before
+  { content: attr(title);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; pointer-events: all; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {  }
+@media screen {
+a.sourceLine::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Introduction to the IP Package</h1>
+
+
+
+<p>The IP package provides a wide array of methods for working with both IPv4 and IPv6 addresses and ranges :</p>
+<ul>
+<li>IP addresses and range parsing and validation</li>
+<li>vectorized operations such as arithmetic, logical and bitwise operations</li>
+<li>IP matching and lookup</li>
+<li>—reverse— DNS lookup and whois databases query</li>
+</ul>
+<p>An IP address is a numerical label assigned to each device connected to a computer network that uses the Internet Protocol for communication. The Internet Protocol uses those labels to identify nodes such as host or network interface for relaying datagrams between them across network boundaries. There are two versions of the Internet Protocol —version 4 and version 6— which differ in many respects.</p>
+<p>Code is mostly C for increased performances and is based on the ip4r PostgreSQL extension. IP objects were designed to behave as much as possible as R vectors but there are some pitfalls. Please read the caveat section at the end of this vignette.</p>
+<div id="getting-started" class="section level1">
+<h1>Getting started</h1>
+<p>The IP package provides six different IP classes :</p>
+<ul>
+<li>the IPv4 class (for IP version 4 addresses)</li>
+<li>the IPv4r class (for IP version 4 addresses ranges)</li>
+<li>the IPv6r class (for IP version 6 addresses ranges)</li>
+<li>the IP class (for both kind of addresses)</li>
+<li>the IPr class (for IP both kind of addresses ranges)</li>
+</ul>
+<p>Let’s start with IPv4 input. Calling the ipv4() and ipv4r() functions creates IPv4 and IPv4r objects respectively from strings :</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb1-2" title="2"><span class="kw">library</span>(IP)</a>
+<a class="sourceLine" id="cb1-3" title="3"><span class="co">## IPv4</span></a>
+<a class="sourceLine" id="cb1-4" title="4"><span class="kw">ipv4</span>(<span class="st">&quot;192.168.0.0&quot;</span>)</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0&quot;</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="co">## IPv4 range using CIDR notation</span></a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">ipv4r</span>(<span class="st">&quot;192.168.0.0/16&quot;</span>)</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0/16&quot;</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1"><span class="co">## same thing using dash notation</span></a>
+<a class="sourceLine" id="cb5-2" title="2"><span class="kw">ipv4r</span>(<span class="st">&quot;192.168.0.0-192.168.255.255&quot;</span>)</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0/16&quot;</code></pre>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1"><span class="co">## same thing using an IPv4 object and an integer giving the number of addresses in the range</span></a>
+<a class="sourceLine" id="cb7-2" title="2"><span class="kw">ipv4r</span>(<span class="kw">ipv4</span>(<span class="st">&quot;192.168.0.0&quot;</span>), <span class="kw">as.integer</span>(2L<span class="op">^</span><span class="dv">16</span> <span class="dv">-1</span>) )</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0/16&quot;</code></pre>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="co">## or </span></a>
+<a class="sourceLine" id="cb9-2" title="2"><span class="kw">ipv4r</span>(<span class="st">&quot;192.168.0.0&quot;</span>, <span class="kw">as.integer</span>(2L<span class="op">^</span><span class="dv">16</span> <span class="dv">-1</span>) )</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0/16&quot;</code></pre>
+<p>Likewise, the ipv6() and ipv6r() functions creates IPv6 and IPv6r objects :</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1"><span class="co">## IPv6</span></a>
+<a class="sourceLine" id="cb11-2" title="2"><span class="kw">ipv6</span>(<span class="st">&quot;fe80::&quot;</span>)</a></code></pre></div>
+<pre><code>## [1] &quot;fe80::&quot;</code></pre>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1"><span class="co">## IPv6 range using CIDR notation</span></a>
+<a class="sourceLine" id="cb13-2" title="2"><span class="kw">ipv6r</span>(<span class="st">&quot;fe80::/10&quot;</span>)</a></code></pre></div>
+<pre><code>## [1] &quot;fe80::/10&quot;</code></pre>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1"><span class="co">## same thing using dash notation</span></a>
+<a class="sourceLine" id="cb15-2" title="2"><span class="kw">ipv6r</span>(<span class="st">&quot;fe80::-febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff&quot;</span>)</a></code></pre></div>
+<pre><code>## [1] &quot;fe80::/10&quot;</code></pre>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="co">## this overflows for ranges greater or equal to 2^54</span></a>
+<a class="sourceLine" id="cb17-2" title="2"><span class="kw">try</span>(<span class="kw">ipv6r</span>(<span class="st">&quot;fe80::&quot;</span>, <span class="dv">2</span><span class="op">^</span><span class="dv">118</span> <span class="dv">-1</span> ))</a></code></pre></div>
+<pre><code>## Error in .local(.Object, ...) : ipv6s should have the same NA</code></pre>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="co">## use this instead</span></a>
+<a class="sourceLine" id="cb19-2" title="2"><span class="kw">ipv6r</span>(<span class="kw">ipv6</span>(<span class="st">&quot;fe80::&quot;</span>) , <span class="kw">ipv6</span>(<span class="st">&quot;fe80::&quot;</span>) <span class="op">+</span><span class="st"> </span>(<span class="kw">ipv6</span>(1L) <span class="op">%&lt;&lt;%</span><span class="st"> </span>118L <span class="op">-</span>1L))</a></code></pre></div>
+<pre><code>## [1] &quot;fe80::/10&quot;</code></pre>
+<p>From the penultimate example, we can see that when input fails for any reason, the returned IP value is NA. In addition, numeric inputs are limited to values lesser than 2^54 because otherwise operations may result in a loss of precision since 2^54 is the size of mantissa of IEEE 754 floating point numbers. Please refer to the Arith-methods section of the manual for more information.</p>
+<p>And, IP and IPr objects are created as follow :</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="co">## IP</span></a>
+<a class="sourceLine" id="cb21-2" title="2">(x &lt;-<span class="st"> </span><span class="kw">ip</span>(<span class="kw">c</span>(<span class="st">&quot;192.168.0.0&quot;</span>, <span class="st">&quot;fe80::&quot;</span>) ) )</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0&quot; &quot;fe80::&quot;</code></pre>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb23-2" title="2"><span class="kw">ip.version</span>(x)</a></code></pre></div>
+<pre><code>## [1] 4 6</code></pre>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb25-2" title="2"><span class="kw">ip</span>(<span class="kw">ipv4</span>(<span class="kw">c</span>(<span class="st">&quot;192.168.0.0&quot;</span>, <span class="ot">NA</span>)), <span class="kw">ipv6</span>(<span class="kw">c</span>(<span class="ot">NA</span>, <span class="st">&quot;fe80::&quot;</span>)) )</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0&quot; &quot;fe80::&quot;</code></pre>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb27-2" title="2"><span class="kw">ip</span>(<span class="kw">ipv4</span>(<span class="st">&quot;192.168.0.0&quot;</span>), <span class="kw">ipv6</span>(<span class="st">&quot;fe80::&quot;</span>), <span class="dt">append=</span>T) </a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0&quot; &quot;fe80::&quot;</code></pre>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1"><span class="co">## IP range using CIDR notation</span></a>
+<a class="sourceLine" id="cb29-2" title="2"><span class="kw">ipr</span>(<span class="kw">c</span>(<span class="st">&quot;192.168.0.0/16&quot;</span>,<span class="st">&quot;fe80::/10&quot;</span>) )</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0/16&quot; &quot;fe80::/10&quot;</code></pre>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1"><span class="co">## same thing using dash notation</span></a>
+<a class="sourceLine" id="cb31-2" title="2"><span class="kw">ipr</span>(<span class="kw">c</span>( <span class="st">&quot;192.168.0.0-192.168.255.255&quot;</span>, <span class="st">&quot;fe80::-febf:ffff:ffff:ffff:ffff:ffff:ffff:ffff&quot;</span>) )</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0/16&quot; &quot;fe80::/10&quot;</code></pre>
+<p>The IP package also provides direct input from integers. Note that input values are treated as <em>unsigned</em> integers :</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb33-2" title="2"><span class="kw">ipv4</span>(1L)</a></code></pre></div>
+<pre><code>## [1] &quot;0.0.0.1&quot;</code></pre>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" title="1"><span class="co">## this is really 4294967295</span></a>
+<a class="sourceLine" id="cb35-2" title="2">x&lt;-<span class="st"> </span><span class="kw">ipv4</span>(<span class="op">-</span>1L)</a></code></pre></div>
+<pre><code>## Warning in ipv4(-1L): negative values</code></pre>
+<div class="sourceCode" id="cb37"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb37-1" title="1"><span class="co">##  </span></a>
+<a class="sourceLine" id="cb37-2" title="2">x <span class="op">&gt;</span><span class="st"> </span><span class="kw">ipv4</span>(0L)</a></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb39-2" title="2"><span class="kw">ipv4</span>(<span class="ot">NA_integer_</span>)</a></code></pre></div>
+<pre><code>## [1] NA</code></pre>
+<div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1"><span class="co">## same thing for IPv6</span></a>
+<a class="sourceLine" id="cb41-2" title="2"><span class="kw">ipv6</span>(1L)</a></code></pre></div>
+<pre><code>## [1] &quot;::1&quot;</code></pre>
+<div class="sourceCode" id="cb43"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb43-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb43-2" title="2">x&lt;-<span class="st"> </span><span class="kw">ipv6</span>(<span class="op">-</span>1L)</a>
+<a class="sourceLine" id="cb43-3" title="3"><span class="co">##</span></a>
+<a class="sourceLine" id="cb43-4" title="4">x <span class="op">&gt;</span><span class="st"> </span><span class="kw">ipv6</span>(0L)</a></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb45"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb45-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb45-2" title="2"><span class="kw">ipv6</span>(<span class="ot">NA_integer_</span>)</a></code></pre></div>
+<pre><code>## Warning in ipv6(NA_integer_): 1 NA introduced during input_int32 IPv6 operation</code></pre>
+<pre><code>## [1] NA</code></pre>
+<p>The dash notation for addresses ranges gives greater flexibility over CIDR notations as it enables input of arbitrary ranges :</p>
+<div class="sourceCode" id="cb48"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb48-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb48-2" title="2"><span class="kw">ipv4r</span>(<span class="st">&quot;192.168.0.0-192.168.0.9&quot;</span>)</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0-192.168.0.9&quot;</code></pre>
+<div class="sourceCode" id="cb50"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb50-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb50-2" title="2"><span class="kw">ipv4r</span>(<span class="st">&quot;192.168.0.10-192.168.0.19&quot;</span>)</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.10-192.168.0.19&quot;</code></pre>
+<p>Also, some methods are specific to certain classes. For instance, the IP package defines getters for address ranges :</p>
+<div class="sourceCode" id="cb52"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb52-1" title="1"><span class="co">## </span></a>
+<a class="sourceLine" id="cb52-2" title="2">x &lt;-<span class="st"> </span><span class="kw">ipv4r</span>(<span class="st">&quot;192.168.0.0/16&quot;</span>)</a>
+<a class="sourceLine" id="cb52-3" title="3"><span class="co">## this also works for IPv6r and IPr objects</span></a>
+<a class="sourceLine" id="cb52-4" title="4"><span class="kw">lo</span>(x) <span class="co">## low end</span></a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0&quot;</code></pre>
+<div class="sourceCode" id="cb54"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb54-1" title="1"><span class="kw">hi</span>(x) <span class="co">## high end</span></a></code></pre></div>
+<pre><code>## [1] &quot;192.168.255.255&quot;</code></pre>
+<p>as well as for IP objects :</p>
+<div class="sourceCode" id="cb56"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb56-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb56-2" title="2">x &lt;-<span class="st"> </span><span class="kw">ip</span>(<span class="kw">c</span>(<span class="st">&quot;192.168.0.0&quot;</span>, <span class="st">&quot;fe80::&quot;</span>) )</a>
+<a class="sourceLine" id="cb56-3" title="3"><span class="co">##</span></a>
+<a class="sourceLine" id="cb56-4" title="4"><span class="kw">ipv4</span>(x) <span class="co">## IPv4 part</span></a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0&quot; NA</code></pre>
+<div class="sourceCode" id="cb58"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb58-1" title="1"><span class="kw">ipv6</span>(x) <span class="co">## IPv6 part</span></a></code></pre></div>
+<pre><code>## [1] NA       &quot;fe80::&quot;</code></pre>
+<div class="sourceCode" id="cb60"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb60-1" title="1"><span class="co">## keep the ipv4 or ipv6 part only</span></a>
+<a class="sourceLine" id="cb60-2" title="2"><span class="kw">ipv4</span>(x, <span class="dt">drop=</span>T)</a></code></pre></div>
+<pre><code>## [1] &quot;192.168.0.0&quot;</code></pre>
+<div class="sourceCode" id="cb62"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb62-1" title="1"><span class="kw">ipv6</span>(x, <span class="dt">drop=</span>T)</a></code></pre></div>
+<pre><code>## [1] &quot;fe80::&quot;</code></pre>
+<p>Note that some methods only work for IPv4 and IPv6 objects and not for IP objects. Partly because some methods have not been implemented yet but mostly by design. Despite their similarities, IPv4 and IPv6 are different protocols. Therefore, at some point or another you’ll have to deal with them separately for instance when masking, sorting or matching addresses. In addition IP methods are a bit slower. And, despite fifteen years of IPv6 deployment, what you still get today is mostly IPv4 addresses in many circumstances anyway.</p>
+</div>
+<div id="working-with-ip-addresses" class="section level1">
+<h1>Working with IP addresses</h1>
+<p>IP* objects were designed to behave as much as possible like base R atomic vectors. Hence, you can input addresses from named vectors :</p>
+<div class="sourceCode" id="cb64"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb64-1" title="1">x &lt;-<span class="st"> </span><span class="kw">ipv4</span>(<span class="kw">c</span>(</a>
+<a class="sourceLine" id="cb64-2" title="2">  <span class="dt">router =</span> <span class="st">'192.168.0.0'</span></a>
+<a class="sourceLine" id="cb64-3" title="3">  , <span class="dt">host1  =</span> <span class="st">'192.168.0.1'</span></a>
+<a class="sourceLine" id="cb64-4" title="4">))</a>
+<a class="sourceLine" id="cb64-5" title="5">x</a></code></pre></div>
+<pre><code>##        router         host1 
+## &quot;192.168.0.0&quot; &quot;192.168.0.1&quot;</code></pre>
+<div class="sourceCode" id="cb66"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb66-1" title="1"><span class="kw">names</span>(x)</a></code></pre></div>
+<pre><code>## [1] &quot;router&quot; &quot;host1&quot;</code></pre>
+<p>Like any R vector, IP addresses supports vector slicing :</p>
+<div class="sourceCode" id="cb68"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb68-1" title="1">x[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]</a></code></pre></div>
+<pre><code>##        router         host1 
+## &quot;192.168.0.0&quot; &quot;192.168.0.1&quot;</code></pre>
+<div class="sourceCode" id="cb70"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb70-1" title="1">x[<span class="dv">2</span><span class="op">:</span><span class="dv">1</span>]</a></code></pre></div>
+<pre><code>##         host1        router 
+## &quot;192.168.0.1&quot; &quot;192.168.0.0&quot;</code></pre>
+<p>and vector assignment :</p>
+<div class="sourceCode" id="cb72"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb72-1" title="1">x[<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>] &lt;-<span class="st"> </span><span class="kw">c</span>( <span class="dt">host2  =</span> <span class="st">'192.168.0.2'</span>, <span class="dt">host3  =</span> <span class="st">'192.168.0.3'</span> )</a>
+<a class="sourceLine" id="cb72-2" title="2">x[<span class="dv">5</span>] &lt;-<span class="st"> </span><span class="kw">c</span>( <span class="dt">host4  =</span> <span class="op">-</span>1062731772L)</a>
+<a class="sourceLine" id="cb72-3" title="3"><span class="kw">data.frame</span>(<span class="dt">n=</span><span class="kw">names</span>(x), <span class="dt">x=</span>x)</a></code></pre></div>
+<pre><code>##             n           x
+## router router 192.168.0.0
+## host1   host1 192.168.0.1
+## host2   host2 192.168.0.2
+## host3   host3 192.168.0.3
+## host4   host4 192.168.0.4</code></pre>
+<div class="sourceCode" id="cb74"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb74-1" title="1">x &lt;-<span class="st"> </span><span class="kw">c</span>(x, x<span class="op">+</span><span class="dv">5</span>)</a>
+<a class="sourceLine" id="cb74-2" title="2"><span class="kw">names</span>(x)[<span class="dv">6</span><span class="op">:</span><span class="dv">10</span>] &lt;-<span class="st"> </span><span class="kw">paste</span>(<span class="st">&quot;host&quot;</span>, <span class="dv">5</span><span class="op">:</span><span class="dv">9</span>, <span class="dt">sep=</span><span class="st">&quot;&quot;</span>)</a></code></pre></div>
+<p>Note that, when doing assignment, new values are automatically coerced. We can also grow vectors :</p>
+<div class="sourceCode" id="cb75"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb75-1" title="1">ip0    &lt;-<span class="st"> </span><span class="kw">ip</span>()</a>
+<a class="sourceLine" id="cb75-2" title="2">ip0[<span class="dv">3</span>] &lt;-<span class="st"> </span><span class="kw">ipv4</span>(3L)</a>
+<a class="sourceLine" id="cb75-3" title="3">ip0[<span class="dv">5</span>] &lt;-<span class="st"> </span><span class="kw">ipv6</span>(5L)</a>
+<a class="sourceLine" id="cb75-4" title="4">ip0  </a></code></pre></div>
+<pre><code>## [1] NA        NA        &quot;0.0.0.3&quot; NA        &quot;::5&quot;</code></pre>
+<div class="sourceCode" id="cb77"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb77-1" title="1"><span class="co">## same thing with NA</span></a>
+<a class="sourceLine" id="cb77-2" title="2">ip0    &lt;-<span class="st"> </span><span class="kw">ip</span>()</a>
+<a class="sourceLine" id="cb77-3" title="3">ip0[<span class="dv">2</span>] &lt;-<span class="st"> </span><span class="ot">NA</span></a>
+<a class="sourceLine" id="cb77-4" title="4">ip0</a></code></pre></div>
+<pre><code>## [1] NA NA</code></pre>
+<p>In addition to vector slicing and assignment, the IP package also provides methods for</p>
+<ul>
+<li>arithmetic : +, –</li>
+<li>comparison : ==, &gt;, &lt;, &gt;=, &lt;=</li>
+<li>bit manipulation : !, &amp;, |, ^, %&lt;&lt;%, %&gt;&gt;%</li>
+</ul>
+<p>Multiplication, division and modulo are not implemented yet. The !, &amp;, | and ^ operators behave differently from their base R counterparts in that they perform bitwise operations much like in the C language :</p>
+<ul>
+<li>! : bitwise NOT (like C ~)</li>
+<li>&amp; : bitwise AND</li>
+<li><div class="line-block">: bitwise OR</div></li>
+<li>^ : bitwise XOR</li>
+<li>%&lt;&lt;% : left shift</li>
+<li>%&gt;&gt;% right shift</li>
+</ul>
+<p>In addition, the ipv4.netmask(n) and ipv4.hostmask(n) (and their corresponding IPv6 functions ipv6.netmask(n) and ipv6.hostmask(n)) returns a net and host mask respectively of size n.</p>
+<div class="sourceCode" id="cb79"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb79-1" title="1">x &lt;-<span class="st"> </span><span class="kw">ipv4</span>(<span class="st">'192.168.0.0'</span>) </a>
+<a class="sourceLine" id="cb79-2" title="2">((x <span class="op">+</span><span class="st"> </span>1L) <span class="op">-</span><span class="st"> </span><span class="kw">ipv4</span>(1L))<span class="op">==</span>x</a></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb81"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb81-1" title="1"><span class="co">## mask complement</span></a>
+<a class="sourceLine" id="cb81-2" title="2"><span class="op">!</span><span class="kw">ipv4.netmask</span>(<span class="dv">8</span>)<span class="op">==</span><span class="kw">ipv4.netmask</span>(<span class="dv">24</span>)</a></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<div class="sourceCode" id="cb83"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb83-1" title="1"><span class="co">## generate high end of the range form a mask</span></a>
+<a class="sourceLine" id="cb83-2" title="2"><span class="kw">ipv4r</span>(x, x<span class="op">|</span><span class="kw">ipv4.hostmask</span>(<span class="dv">16</span>) )<span class="op">==</span><span class="kw">ipv4r</span>(<span class="st">'192.168.0.0/16'</span>)</a></code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
+<p>Same as any R vectors, binary operators apply to vectors of different length :</p>
+<div class="sourceCode" id="cb85"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb85-1" title="1"><span class="co">## recycle</span></a>
+<a class="sourceLine" id="cb85-2" title="2"><span class="kw">ipv4</span>(<span class="kw">c</span>(0L,1L)) <span class="op">+</span><span class="st"> </span><span class="kw">ipv4</span>(<span class="dv">0</span><span class="op">:</span>5L)</a></code></pre></div>
+<pre><code>## [1] &quot;0.0.0.0&quot; &quot;0.0.0.2&quot; &quot;0.0.0.2&quot; &quot;0.0.0.4&quot; &quot;0.0.0.4&quot; &quot;0.0.0.6&quot;</code></pre>
+<div class="sourceCode" id="cb87"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb87-1" title="1"><span class="co">##</span></a>
+<a class="sourceLine" id="cb87-2" title="2"><span class="kw">ipv4</span>(<span class="kw">c</span>(0L,1L)) <span class="op">&lt;</span><span class="st"> </span><span class="kw">ipv4</span>(<span class="dv">0</span><span class="op">:</span>5L)</a></code></pre></div>
+<pre><code>## [1] FALSE FALSE  TRUE  TRUE  TRUE  TRUE</code></pre>
+<div class="sourceCode" id="cb89"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb89-1" title="1"><span class="co">## even if dimensions don't match</span></a>
+<a class="sourceLine" id="cb89-2" title="2"><span class="kw">ipv4</span>(<span class="kw">c</span>(0L,1L)) <span class="op">+</span><span class="st"> </span><span class="kw">ipv4</span>(<span class="dv">0</span><span class="op">:</span>6L)</a></code></pre></div>
+<pre><code>## [1] &quot;0.0.0.0&quot; &quot;0.0.0.2&quot; &quot;0.0.0.2&quot; &quot;0.0.0.4&quot; &quot;0.0.0.4&quot; &quot;0.0.0.6&quot; &quot;0.0.0.6&quot;</code></pre>
+<p>IP* arithmetic behaves like R integer arithmetic. Hence, overflow means NA :</p>
+<div class="sourceCode" id="cb91"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb91-1" title="1"><span class="co">## note: beware of operators precedence here : `+` &gt; `!`</span></a>
+<a class="sourceLine" id="cb91-2" title="2">( <span class="op">!</span><span class="kw">ipv4</span>(0L) )<span class="op">+</span>1L</a>
+<a class="sourceLine" id="cb91-3" title="3">.Machine<span class="op">$</span>integer.max<span class="op">+</span>1L</a></code></pre></div>
+<p>and so does any operation with NA</p>
+<div class="sourceCode" id="cb92"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb92-1" title="1"><span class="kw">ipv4</span>(<span class="kw">c</span>(<span class="ot">NA</span>,1L) ) <span class="op">==</span><span class="st"> </span><span class="kw">ipv4</span>(1L)</a></code></pre></div>
+<pre><code>## [1]   NA TRUE</code></pre>
+<p>There are no Summary (min(), max(),…) methods yet. But table() works :</p>
+<div class="sourceCode" id="cb94"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb94-1" title="1">x &lt;-<span class="st"> </span><span class="kw">ipv4</span>(<span class="st">'192.168.0.0'</span>) <span class="op">+</span><span class="st"> </span><span class="dv">0</span><span class="op">:</span><span class="dv">4</span></a>
+<a class="sourceLine" id="cb94-2" title="2">x &lt;-<span class="st"> </span>x[<span class="kw">sample.int</span>(<span class="kw">length</span>(x),<span class="kw">length</span>(x)<span class="op">*</span><span class="dv">9</span>, <span class="dt">replace=</span>T)]</a>
+<a class="sourceLine" id="cb94-3" title="3"><span class="kw">table</span>(x)</a></code></pre></div>
+<pre><code>## x
+## 192.168.0.0 192.168.0.1 192.168.0.2 192.168.0.3 192.168.0.4 
+##           5          13          10           8           9</code></pre>
+<p>IPv6 and IP objects behave similarly and most of what precedes works for them (with some obvious modifications). There are some exceptions for IP objects because a few methods are still missing or do not apply like when assigning to an IP vector :</p>
+<div class="sourceCode" id="cb96"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb96-1" title="1">x=<span class="kw">ip</span>(<span class="kw">c</span>(</a>
+<a class="sourceLine" id="cb96-2" title="2">    <span class="dt">router =</span> <span class="st">'192.168.0.0'</span></a>
+<a class="sourceLine" id="cb96-3" title="3">    , <span class="dt">host1  =</span> <span class="st">'192.168.0.1'</span></a>
+<a class="sourceLine" id="cb96-4" title="4">))</a>
+<a class="sourceLine" id="cb96-5" title="5"><span class="co">## does not work yet</span></a>
+<a class="sourceLine" id="cb96-6" title="6"><span class="kw">try</span>(x[<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>] &lt;-<span class="st"> </span><span class="kw">c</span>( <span class="dt">host2  =</span> <span class="st">'192.168.0.2'</span>, <span class="dt">host3  =</span> <span class="st">'192.168.0.3'</span> ))</a></code></pre></div>
+<pre><code>## Error in `[&lt;-`(`*tmp*`, 3:4, value = c(host2 = &quot;192.168.0.2&quot;, host3 = &quot;192.168.0.3&quot; : 
+##   unimplemented assign method for IP object</code></pre>
+<div class="sourceCode" id="cb98"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb98-1" title="1"><span class="co">##  we need to convert to IP first</span></a>
+<a class="sourceLine" id="cb98-2" title="2">x[<span class="dv">3</span><span class="op">:</span><span class="dv">4</span>] &lt;-<span class="st"> </span><span class="kw">ip</span>(<span class="kw">c</span>( <span class="dt">host2  =</span> <span class="st">'192.168.0.2'</span>, <span class="dt">host3  =</span> <span class="st">'192.168.0.3'</span> ))</a>
+<a class="sourceLine" id="cb98-3" title="3"><span class="co">## does not work because we cannot tell the IP version</span></a>
+<a class="sourceLine" id="cb98-4" title="4"><span class="kw">try</span>(x[<span class="dv">5</span>] &lt;-<span class="st"> </span><span class="kw">c</span>( <span class="dt">host4  =</span> <span class="op">-</span>1062731772L))</a></code></pre></div>
+<pre><code>## Error in `[&lt;-`(`*tmp*`, 5, value = c(host4 = -1062731772L)) : 
+##   unimplemented assign method for IP object</code></pre>
+<p>The IP package also provides methods for IP* lookup and DNS resolution. But we’ll cover that in another vignette.</p>
+</div>
+<div id="caveat" class="section level1">
+<h1>Caveat</h1>
+<p>In order to make R believe that IP are regular vectors, every IP objects inherits from the integer class. This means that by virtue of method dispatching, if R does not find a method for an IP object but one exists for an integer vector, the latter will be called and this may not return an IP object or possibly have undesirable side effects that may cause an unpredictable behavior. For example, in an early version of the package, multiplication returned a potentially messed up IP object. Now, this has been fixed for the most common cases but it is virtually impossible to fully prevent it as it is a feature of R object-oriented programming. Therefore, if something strange happens, it might be the result of calling a method not defined by the IP package on an IP object.</p>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
