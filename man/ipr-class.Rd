@@ -154,9 +154,8 @@
 \alias{names<-.IPv6r}
 \alias{names<-.IPr}
 %%
-%% 
-%%\alias{as.data.frame}
-% \alias{as.data.frame-method}
+%%
+%% TODO: mv to Conversion 
 %%
 \alias{as.data.frame.IPv4r}
 \alias{as.data.frame.IPv6r}
@@ -183,6 +182,11 @@
 \alias{rep.IPv4r}
 \alias{rep.IPv6r}
 \alias{rep.IPr}
+%%
+%%
+%%
+\alias{seq.IPv4r}
+\alias{seq.IPv6r}
 %%
 %%
 %%
@@ -259,6 +263,7 @@ hi(ip.class$class)==class.ip$hi
 ##
 ip.range(ip.class$class)
 ## this is ok for IP v4 but may cause loss of precision for IPv6
+## (please refer to the Arithmetic section)
 ip.range(ip.class$class)==as.numeric(class.ip$hi - class.ip$lo)
 ##
 ##
@@ -277,4 +282,15 @@ ipr0
 ipr0    <- ipr()
 ipr0[2] <- NA
 ipr0
+##
+## sequences
+##
+seq(ipv4r('0.0.0.0/24'), by=5)
+seq(ipv4r('0.0.0.0/24'), length.out=3)
+##
+seq(ipv6r('::/120'), b=5)
+seq(ipv6r('::/120'), length.out=3)
+##
+## throws an error : seq(ipv6r('::/96'),by=1)
+## because this would yield a 2^32 vector
 }

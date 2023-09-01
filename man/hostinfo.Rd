@@ -21,6 +21,8 @@
 \alias{host,IP-method}
 %% 
 \alias{show,host-method}
+%% 
+\alias{names.host}
 %%
 %%
 %%
@@ -106,7 +108,7 @@
   %%
   is.fqdn(hostname)
   %%
-  whois(domain, referer , output, verbose)
+  whois(domain, refer , output, verbose)
   %%  
   rir.names() 
   %%
@@ -155,12 +157,12 @@
     Flags for IDNA conversion. "IDNA_DEFAULT": default behavior, "IDNA_ALLOW_UNASSIGNED": allow processing of unassigned Unicode code points, "IDNA_USE_STD3_ASCII_RULES": check output to make sure it is a STD3 conforming host name.
   }  
   %%
-  \item{referer}{
+  \item{refer}{
     An optional referrer to be queried
   } 
   %%
   \item{output}{
-    An integer specifying whether to returns the raw response from the referrer (0) or a parsed key-value named vector (1). The latter is still experimental due to the heterogeneity of responses.
+    An integer specifying whether to return the raw response from the referrer (0) or parse the response and return a key-value named vector (1). The latter is still experimental due to the heterogeneity of responses.
   } 
   %%
   \item{verbose}{
@@ -172,7 +174,7 @@
 %%
 \details{
   %%
-  \subsection{Methods et functions for querying informations about hosts}{
+  \subsection{Methods and functions for querying informations about hosts}{
   %%
   \itemize{
     %%
@@ -191,7 +193,7 @@
   }
   %%
   Since \code{localhost.ip()} needs OS specific system call ---as well as \code{host()} and \code{host.info()}---, this function is only available for \bold{POSIX compliant OS} at the moment. 
-  Support of Internationalized Domain Names (IDN) also depends on the system's libraries. For instance, glibc supports IDN starting with version 2.3.4. Use the \code{toIdna()} function to ensure proper domain names encoding.
+  Support of Internationalized Domain Names (IDN) also depends on the system's libraries. For instance, glibc supports IDN starting with version 2.3.4. Use the \code{toIdna()} function to ensure proper domain names encoding. Note that result may differ depdending on the flag argument.
   %%
   In addition, the \code{host()} and \code{host.info()} methods are still \bold{very experimental} and might change in the future.
   
@@ -268,14 +270,12 @@
 %%
 \examples{
 ##
-\dontrun{
+\donttest{
 host(
   ipv4(
     c("127.0.0.1")
   )
 )
-}
-\dontrun{
 ##
 h <- host(c(
   "icann.org", "iana.org"
@@ -288,40 +288,48 @@ host(ipv4(h))
 ##
 ## results may vary according to the (POSIX) platform
 host(c("bucher.de", "Bücher.de"))
-## 
-dn <- c( 
-  enc2utf8("bücher.de") ## ensure UTF-8
-  ## cannot input emoji with Latex and "\u1f4a9" does not work either in R
-  , rawToChar(as.raw(c(0xf0, 0x9f, 0x92, 0xa9, 0x2e, 0x6c, 0x61)))
-)
-##
-Encoding(dn) <- "UTF-8"
-##
-dn
-## enforce internationalization with different options
-flags <-rep( c( "IDNA_DEFAULT" , "IDNA_ALLOW_UNASSIGNED"), each = length(dn))
-##
-dni <- toIdna( dn, flags)
-##
-host(dni)
 }
-\dontrun{
+##
+if( ip.capabilities()["IDN"] ){
+  ## 
+  dn <- c( 
+    enc2utf8("bücher.de") ## ensure UTF-8
+    ## cannot input emoji with Latex 
+    , "\U1f4a9" # or alternatively: rawToChar(as.raw(c(0xf0, 0x9f, 0x92, 0xa9, 0x2e, 0x6c, 0x61)))
+  )
+  ##
+  Encoding(dn) <- "UTF-8"
+  ##
+  dn
+  ## enforce internationalization with different options
+  flags <-rep( c( "IDNA_DEFAULT" , "IDNA_ALLOW_UNASSIGNED"), each = length(dn))
+  ##
+  dni <- toIdna( dn, flags)
+  ## convert back
+  fromIdna(dni, flags)
+\donttest{
+  ##
+  host(dni)
+}
+}
+##
+\donttest{
+##
 ## French country-code top-level domains (ccTLD)
+##
 tld <- whois(
   c(
     "fr", "re", "tf", "wf", "pm", "yt"
     , "nc", "mq"##, "gp", "gf"
     , "pf"
   )
-  , verbose = 1
-  , output = 0
+  , verbose = 1 ## be a little verbose
+  , output = 1 ## output key-value pairs
 )
 ##
-sapply(tld, function(x)names(x))
-}
-\dontrun{
+sapply(tld, function(x) x[names(x)=="whois"])
 ##
-##
+## R related info
 ##
 rhost     <- host('r-project.org')
 ## hostname       : "cran.wu-wien.ac.at"

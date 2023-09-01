@@ -54,6 +54,10 @@
 %%
 %%
 %%
+\alias{as.vector}
+\alias{as.vector-methods}
+\alias{as.vector,.__IPvr__.-method}
+%%
 \alias{as.numeric}
 %%
 \alias{as.numeric-methods}
@@ -62,6 +66,15 @@
 \alias{as.numeric,IPv6-method}
 \alias{as.numeric,IPv6r-method}
 \alias{as.numeric,IP-method}
+%%
+\alias{as.integer}
+%%
+\alias{as.integer-methods}
+\alias{as.integer,IPv4-method}
+\alias{as.integer,IPv4r-method}
+\alias{as.integer,IPv6-method}
+\alias{as.integer,IPv6r-method}
+%%\alias{as.numeric,IP-method}
 %%
 %%
 %%
@@ -87,11 +100,13 @@
 % }
 %%
 \arguments{
-  \item{x}{ an atomic vector of class 'IPv4', 'IPv4r', 'IPv6', 'IP' or 'IPr'}
+  \item{x}{ an object of class 'IPv4', 'IPv4r', 'IPv6', 'IP' or 'IPr'}
   \item{\ldots}{not used}
 }
 %%
-% \details{}
+% \details{
+% \code{as.vector} coerces IP objects to character or throws an error.
+% }
 %%
 %%
 %%

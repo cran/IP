@@ -125,7 +125,8 @@ setMethod(
     if(is.null(ipstring)){
       ##
       if(
-        class( lo )=='IPv6' & ( class( nip  ) %in% c('integer','numeric') )
+#         class( lo )=='IPv6' & ( class( nip  ) %in% c('integer','numeric') )
+        inherits( lo, 'IPv6' ) & inherits( nip, c('integer','numeric') )
       ){
         ##
         hi <- lo + nip
@@ -140,7 +141,8 @@ setMethod(
       ##
       if( 
         (
-          class( lo )=='IPv6' & class( hi  )=='IPv6'
+#           class( lo )=='IPv6' & class( hi  )=='IPv6'
+          inherits(lo, 'IPv6') & inherits(hi, 'IPv6' )
         ) 
       ){
         ##
@@ -425,6 +427,13 @@ toString.IPv6 <- function(x,...){
 ##
 ##
 ##
+setMethod(
+  "as.integer"
+  , "IPv6"
+  , function(x) stop("not implemented") ## .Call("Rip_ipv4_cvtfl64_0", x)
+)
+##
+##
 ##
 setMethod(
   "as.numeric"
@@ -525,6 +534,13 @@ setMethod(
 ##
 ##
 ##
+setMethod(
+  "as.integer"
+  , "IPv6r"
+  , function(x) stop("not implemented") ## .Call("Rip_ipv4_cvtfl64_0", x)
+)
+##
+##
 ##
 setMethod(
   "as.numeric"
@@ -584,7 +600,7 @@ setMethod(
       ##
 # cat("IPv6 xpd\n")
       ## CHK
-      ip@ipv6 <- matrix(x@ipv6[ (ip@.Data[nna]+1L) ,], ncol=2) 
+      ip@ipv6 <- matrix(x@ipv6[ (ip@.Data[nna]+1L) ,,drop=F], ncol=2) 
 # print(str(ip@ipv6))      
       ##
 #       ip@ipv6 <- x@ipv6[which( nna ),,drop=F]
@@ -595,7 +611,7 @@ setMethod(
       ip@length     <-nrow(ip@ipv6)
     }else{
       ## FIXME: NULL
-      ip@ipv6 <- matrix(0.,ncol=2)
+      ip@ipv6 <- matrix(numeric(),ncol=2)
       ip@length <- 0L
     }
     ##!is.null
@@ -611,16 +627,20 @@ setMethod(
   "[<-"
   , "IPv6"
   , function (x, i, j, ..., value){
+    ## mv
+#     if( class(value)!='IPv6' ) value <- ipv6(value) ## 
     ##
-    if( class(value)!='IPv6' ) value <- ipv6(value) ## 
-    ##
-    ipv6 <- if(nrow(x@ipv6)) matrix(x@ipv6, ncol=2)[(x@.Data+1),] else x@ipv6
+    ipv6 <- if(nrow(x@ipv6)) matrix(x@ipv6, ncol=2)[(x@.Data+1),,drop=F] else x@ipv6
+# print(str(ipv6))
     ##
     v.na <- is.na(value)
     ##
     if (all(v.na==T)){
       x@.Data[i] <- NA
     }else{
+      ##
+#       if( class(value)!='IPv6' ) value <- ipv6(value) ##
+      if( !inherits(value, 'IPv6') ) value <- ipv6(value) ##
       ## 
       mx <- max(i)
       ##
@@ -633,7 +653,7 @@ setMethod(
         }
         ## replace
         ##
-        ipv6[i,]     <- as.matrix(value@ipv6, ncol=2)[value@.Data+1,]
+        ipv6[i,]     <- as.matrix(value@ipv6, ncol=2)[value@.Data+1,, drop=F]
         ## cp
         x@.Data[i]   <- value@.Data
         ## FIXME: NULL ipv6 table
@@ -742,7 +762,7 @@ setMethod(
       ##
       ip@length     <- nrow(ip@ipr)
     }else{
-      ip@ipr        <- matrix(0.,nrow=0 , ncol=4)
+      ip@ipr        <- matrix(numeric(),nrow=0 , ncol=4)
       ip@length <- 0L
     }
     ##!is.null
@@ -759,8 +779,8 @@ setMethod(
   "[<-"
   , "IPv6r"
   , function (x, i, j, ..., value){
-    ##
-    if( class(value)!='IPv6r' ) value <- ipv6r(value) ## new('IPv6r', as.character(value))
+    ## mv
+#     if( class(value)!='IPv6r' ) value <- ipv6r(value) ## new('IPv6r', as.character(value))
     ## xpd
     ipr     <- if(nrow(x@ipr)) as.matrix(x@ipr, ncol=4)[x@.Data+1,] else x@ipr
     ##
@@ -771,6 +791,9 @@ setMethod(
       x@.Data[i] <- NA
       
     }else{ 
+      ## 
+#       if( class(value)!='IPv6r' ) value <- ipv6r(value) 
+      if( !inherits(value, 'IPv6r') ) value <- ipv6(value) ##
       ## 
       mx <- max(i)
       ## replace
@@ -874,7 +897,7 @@ setMethod(
   ## 
   , signature(e1 = "IPv6", e2 = "IPv6")
   , function(e1,e2){
-    .Call("Rip_ipv6_op2_bool_eq_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv6_op2_bool_eq_2", e1, e2 ) else .Call("Rip_ipv6_op2_bool_eq_0", e1, e2 )
   }
 )
 ##
@@ -886,7 +909,7 @@ setMethod(
   ## 
   , signature(e1 = "IPv6", e2 = "IPv6")
   , function(e1,e2){
-    .Call("Rip_ipv6_op2_bool_neq_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv6_op2_bool_neq_2", e1, e2 ) else .Call("Rip_ipv6_op2_bool_neq_0", e1, e2 )
   }
 )
 ##
@@ -898,7 +921,7 @@ setMethod(
   ## 
   , signature(e1 = "IPv6", e2 = "IPv6")
   , function(e1,e2){
-    .Call("Rip_ipv6_op2_bool_lt_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv6_op2_bool_lt_2", e1, e2 ) else .Call("Rip_ipv6_op2_bool_lt_0", e1, e2 )
   }
 )
 ##
@@ -910,7 +933,7 @@ setMethod(
   ## 
   , signature(e1 = "IPv6", e2 = "IPv6")
   , function(e1,e2){
-    .Call("Rip_ipv6_op2_bool_le_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv6_op2_bool_le_2", e1, e2 ) else .Call("Rip_ipv6_op2_bool_le_0", e1, e2 )
   }
 )
 ##
@@ -922,7 +945,7 @@ setMethod(
   ## 
   , signature(e1 = "IPv6", e2 = "IPv6")
   , function(e1,e2){
-    .Call("Rip_ipv6_op2_bool_gt_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv6_op2_bool_gt_2", e1, e2 ) else .Call("Rip_ipv6_op2_bool_gt_0", e1, e2 )
   }
 )
 ##
@@ -934,7 +957,7 @@ setMethod(
   ## 
   , signature(e1 = "IPv6", e2 = "IPv6")
   , function(e1,e2){
-    .Call("Rip_ipv6_op2_bool_ge_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv6_op2_bool_ge_2", e1, e2 ) else .Call("Rip_ipv6_op2_bool_ge_0", e1, e2 )
   }
 )##________________________________________________________________________________________________________________________
 ##
@@ -946,7 +969,7 @@ setMethod(
   ## 
   , signature(e1 = "IPv6r", e2 = "IPv6r")
   , function(e1,e2){
-    .Call("Rip_ipv6r_op2_bool_eq_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv6r_op2_bool_eq_2", e1, e2 ) else .Call("Rip_ipv6r_op2_bool_eq_0", e1, e2 )
   }
 )
 ##
@@ -955,7 +978,7 @@ setMethod(
   ## 
   , signature(e1 = "IPv6r", e2 = "IPv6r")
   , function(e1,e2){
-    .Call("Rip_ipv6r_op2_bool_neq_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv6r_op2_bool_neq_2", e1, e2 ) else .Call("Rip_ipv6r_op2_bool_neq_0", e1, e2 )
   }
 )
 ##
@@ -1212,6 +1235,27 @@ ipv6.hostmask <- function(n){
 ##
 ## 
 ## 
+if( T ){
+  ##
+  setMethod(
+      "ip.order"
+    , "IPv6"
+    ##  
+    , function(x, na.last = TRUE, decreasing = FALSE){
+      ##
+      order(x, na.last=na.last, decreasing=decreasing)
+    }
+  )
+##
+# setMethod(
+#   "ip.order"
+#   ## 
+#   , "IPv6"
+#   ##  
+#   , IP_order
+# )
+  
+}else{
 ##
 setMethod(
   "ip.order"
@@ -1224,9 +1268,11 @@ setMethod(
     idx <- .Call(
       ##
       "Rip_ipv6_qsort0"
-      , x[ !(naidx <- is.na(x)) ]
+      , if( na <- anyNA(x) ) x[ !(naidx <- is.na(x)) ] else x
       , decreasing ## 
     )+1L
+    ##
+    if(!na) return(x)
     ##
 #     idx <- .Call(
 #       "Rip_ipv6_qsort_1"
@@ -1241,8 +1287,28 @@ setMethod(
     }
   }
 )
+}
 ##________________________________________________________________________________________________________________________
 ## 
+##
+setMethod(
+    "ip.order"
+  , "IPv6r"
+  ##  
+  , function(x, na.last = TRUE, decreasing = FALSE){
+    ##
+    order(x, na.last=na.last, decreasing=decreasing)
+  }
+)
+## 
+# setMethod(
+#   "ip.order"
+#   ## 
+#   , "IPv6r"
+#   ##  
+#   , IP_order
+# )
+##
 ## !!!NA!!!
 ##
 setMethod(
@@ -1251,15 +1317,18 @@ setMethod(
   , "IPv6"
   , function(x){
     ##
-    idx <- .Call(
-      "Rip_ipv6_qsort0" ## "Rip_ipv6_qsort_1"
-      , x[ (nna <- !is.na(x)) ]
-      , FALSE ## decreasing
-    )+1L
+#     cat("IPv6:xtfrm\n")
     ##
-    res           <- integer(length(x))
-    res[nna][idx] <- seq.int(sum(nna))
-    res[!nna]     <- NA
+    y <- .Call("Rip_ipv6_cvtfl64nx4_0", x)
+    ## 
+    idx <- order( 
+       y[,1], y[,2], y[,3], y[,4]
+    ) 
+    ##
+    res      <- integer(length(x))
+    res[idx] <- seq.int(length(x))
+    if( anyNA(x)) res[ is.na(x) ]  <- NA
+    ##
     res
   }
 )
@@ -1274,12 +1343,19 @@ setMethod(
   , "IPv6r"
   , function(x){
     ##
-    idx <- order( x@ipr[,1], x@ipr[,2], x@ipr[,3], x@ipr[,4] ) 
+#     cat("IPv6r:xtfrm\n")
     ##
-    nna           <- !is.na(x)
-    res           <- integer(length(x))
-    res[nna][idx] <- seq.int(sum(nna))
-    res[!nna]     <- NA
+    xlo <- .Call("Rip_ipv6_cvtfl64nx4_0", lo(x))
+    xhi <- .Call("Rip_ipv6_cvtfl64nx4_0", hi(x))
+    ## 
+    idx <- order(
+      xlo[,1], xlo[,2], xlo[,3], xlo[,4] 
+      , xhi[,1], xhi[,2], xhi[,3], xhi[,4] 
+    ) 
+    ##
+    res      <- integer(length(x))
+    res[idx] <- seq.int(length(x))
+    if( anyNA(x)) res[ is.na(x) ]  <- NA
     ##
     res
   }
@@ -1365,9 +1441,11 @@ setMethod(
     ## !!! CHK
     if( !length(table) ) stop("empty table")
     ##
+    ## TODO: rm NA
+    ##
     table <- table[!is.na(table)]
     ##
-    idx <- ip.order( 
+    idx <- order( ## ip.order
       ##
       ipv6(table)[['lo']]  
       ##
@@ -1419,7 +1497,7 @@ setMethod(
   }
 )
 ##
-## !!!TODO : hash256
+## ¡¡¡ TODO : hash256 !!!
 ##
 setMethod(
   "ip.match"

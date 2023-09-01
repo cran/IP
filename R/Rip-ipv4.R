@@ -34,7 +34,7 @@ setMethod(
     }
     ##
     if( is.null(.Object@ipv4) ){
-      .Object@ipv4r <- integer(0)
+      .Object@ipv4r <- integer(0) ## ¡ IPv4 !
     }
     ##
     if( is.null(.Object@id) ){
@@ -65,7 +65,7 @@ setValidity(
   }
 )
 ##
-##
+## ¡¡¡FIXME: object@ipv4r <- integer(0) object@id <- character() !!!
 ##
 setMethod(
   "ipv4"
@@ -79,7 +79,7 @@ setMethod(
   , function(object,...) new('IPv4', object,...)
 )
 ##
-## 
+## ¡¡¡ ipv4(<IPv4>) => ipv4(<i32>) !!!
 ##
 setMethod(
   "ipv4"
@@ -144,7 +144,8 @@ setMethod(
     if(is.null(ipstring)){
       ##
       if(
-        class( lo )=='IPv4' & ( class( nip  ) %in% c('integer','numeric') )
+#         class( lo )=='IPv4' & ( class( nip  ) %in% c('integer','numeric') )
+        inherits( lo, 'IPv4' ) & inherits( nip, c('integer','numeric') )
       ){
 # print(str(lo));print(str(nip) )      
         ##
@@ -161,7 +162,8 @@ setMethod(
       ##
       if( 
         (
-          class( lo )=='IPv4' & class( hi  )=='IPv4'
+#           class( lo )=='IPv4' & class( hi  )=='IPv4'
+          inherits(lo, 'IPv4') & inherits(hi, 'IPv4' )
         ) 
       ){
         ##
@@ -378,6 +380,13 @@ setMethod(
 ##
 ##
 ##
+# setMethod(
+#   "is.integer"
+#   ## 
+#   , signature(x = "IPv4")
+#   , function(x) FALSE
+# )
+##
 setMethod(
   "is.numeric"
   ## 
@@ -436,6 +445,14 @@ setMethod(
 )
 ## utile ?
 setAs("IPv4", "character", function(from) .Call("Rip_ipv4_as_character_0", from)) 
+##
+##
+##
+setMethod(
+  "as.integer"
+  , "IPv4"
+  , function(x) stop("not implemented") ## .Call("Rip_ipv4_cvtfl64_0", x)
+)
 ##
 ##
 ##
@@ -531,6 +548,13 @@ setMethod(
 ##
 ##
 ##
+setMethod(
+  "as.integer"
+  , "IPv4r"
+  , function(x) stop("not implemented") ## .Call("Rip_ipv4_cvtfl64_0", x)
+)
+##
+##
 ##
 setMethod(
   "as.numeric"
@@ -553,7 +577,7 @@ unique.IPv4r <- function(
   ##
   htb.sz  <- as.integer(length(x)*1.63)+1L
   ## 
-  idx <- .Call("Rip_h_ipv4r_h64dblh_lemire_hash_0_0", table, c(htb.sz = htb.sz, M2 = if( (htb.sz)>14L ) 7L else 1L ))
+  idx <- .Call("Rip_h_ipv4r_h64dblh_lemire_hash_0_0", x, c(htb.sz = htb.sz, M2 = if( (htb.sz)>14L ) 7L else 1L ))
   ##
   x[idx]
 }
@@ -611,7 +635,7 @@ setMethod(
   , "IPv4"
   , function (x, i, j, ..., value){
     ##
-    if( class(value)!='IPv4' ) value <- ipv4(value) ## 
+#     if( class(value)!='IPv4' ) value <- ipv4(value) ## 
     ## xpd
     ipv4    <- x@ipv4[x@.Data+1]
     ##
@@ -620,6 +644,9 @@ setMethod(
     if (all(v.na==T)){
       x@.Data[i] <- NA
     }else{
+      ##
+#       if( class(value)!='IPv4' ) value <- ipv4(value) ##
+      if( !inherits(value, 'IPv4') ) value <- ipv4(value) ##
       ## grow matrix if necesary
       if( 
         ( d <- max(i) - length(ipv4) )>0
@@ -744,7 +771,7 @@ setMethod(
       ##
       ip@length <-nrow(ip@ipr)
     }else{
-      ip@ipr <- matrix(0L,nrow=0, ncol=2)
+      ip@ipr <- matrix(integer(),nrow=0, ncol=2)
       ip@length <- 0L
     }
     ## !!!NA!!! !is.null(x@id)
@@ -774,8 +801,8 @@ setMethod(
   "[<-"
   , "IPv4r"
   , function (x, i, j, ..., value){
-    ##
-    if( class(value)!='IPv4r' ) value <- ipv4r(value) 
+    ## mv
+#     if( class(value)!='IPv4r' ) value <- ipv4r(value) 
     ## xpd
     ipr     <- if(nrow(x@ipr))  matrix(x@ipr, ncol=2)[x@.Data+1,] else x@ipr
     ##
@@ -785,6 +812,9 @@ setMethod(
       ##
       x@.Data[i] <- NA
     }else{ 
+      ##
+#       if( class(value)!='IPv4r' ) value <- ipv4r(value) 
+      if( !inherits(value, 'IPv4r') ) value <- ipv4(value) ##
       ## 
       mx <- max(i)
       ## replace
@@ -941,7 +971,7 @@ setMethod(
   , signature(e1 = "IPv4", e2 = "IPv4")
   ##
   , function(e1,e2){
-    .Call("Rip_ipv4_op2_bool_eq_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv4_op2_bool_eq_2", e1, e2 ) else .Call("Rip_ipv4_op2_bool_eq_0", e1, e2 )
   }
 )
 ##
@@ -952,7 +982,7 @@ setMethod(
   , signature(e1 = "IPv4", e2 = "IPv4")
   ##
   , function(e1,e2){
-    .Call("Rip_ipv4_op2_bool_neq_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv4_op2_bool_neq_2", e1, e2 ) else .Call("Rip_ipv4_op2_bool_neq_0", e1, e2 )
   }
 )
 ##
@@ -963,7 +993,7 @@ setMethod(
   , signature(e1 = "IPv4", e2 = "IPv4")
   ## 
   , function(e1,e2){
-    .Call("Rip_ipv4_op2_bool_lt_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv4_op2_bool_lt_2", e1, e2 ) else .Call("Rip_ipv4_op2_bool_lt_0", e1, e2 )
   }
 )
 ##
@@ -974,7 +1004,7 @@ setMethod(
   , signature(e1 = "IPv4", e2 = "IPv4")
   ## 
   , function(e1,e2){
-    .Call("Rip_ipv4_op2_bool_le_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv4_op2_bool_le_2", e1, e2 ) else .Call("Rip_ipv4_op2_bool_le_0", e1, e2 )
   }
 )
 ##
@@ -985,7 +1015,7 @@ setMethod(
   , signature(e1 = "IPv4", e2 = "IPv4")
   ## 
   , function(e1,e2){
-    .Call("Rip_ipv4_op2_bool_gt_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv4_op2_bool_gt_2", e1, e2 ) else .Call("Rip_ipv4_op2_bool_gt_0", e1, e2 )
   }
 )
 ##
@@ -996,7 +1026,7 @@ setMethod(
   , signature(e1 = "IPv4", e2 = "IPv4")
   ## 
   , function(e1,e2){
-    .Call("Rip_ipv4_op2_bool_ge_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv4_op2_bool_ge_2", e1, e2 ) else .Call("Rip_ipv4_op2_bool_ge_0", e1, e2 )
   }
 )
 ##________________________________________________________________________________________________________________________
@@ -1009,7 +1039,7 @@ setMethod(
   , signature(e1 = "IPv4r", e2 = "IPv4r")
   ## 
   , function(e1,e2){
-    .Call("Rip_ipv4r_op2_bool_eq_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv4r_op2_bool_eq_2", e1, e2 ) else  .Call("Rip_ipv4r_op2_bool_eq_0", e1, e2 )
   }
 )
 ## 
@@ -1020,10 +1050,10 @@ setMethod(
   , signature(e1 = "IPv4r", e2 = "IPv4r")
   ## 
   , function(e1,e2){
-    .Call("Rip_ipv4r_op2_bool_neq_0", e1, e2 )
+    if( IP_AVX2 ) .Call("Rip_ipv4r_op2_bool_neq_2", e1, e2 ) else .Call("Rip_ipv4r_op2_bool_neq_0", e1, e2 )
   }
 )
-## 
+## TODO:
 ## intersection
 ## intersects : Ripaddr_ipv4r_cmp_intersects
 ##
@@ -1297,7 +1327,7 @@ ipv4.hostmask <- function(n){
 ##
 ##________________________________________________________________________________________________________________________
 ##
-## TODO : getGroupMembers("Summary")
+## ¡¡¡ TODO : getGroupMembers("Summary")
 ## "max"   "min"   "range" "prod"  "sum"   "any"   "all" 
 ##
 ## 
@@ -1319,43 +1349,57 @@ setMethod(
 ##
 ##________________________________________________________________________________________________________________________
 ##
+##  
 ## 
-## 
-##
+if( T ){
+  ##
+  setMethod(
+      "ip.order"
+    , "IPv4"
+    ##  
+    , function(x, na.last = TRUE, decreasing = FALSE){
+      ##
+      order(x, na.last=na.last, decreasing=decreasing)
+    }
+  )
+}else if( F ){
+##  
 setMethod(
   "ip.order"
   ## 
   , "IPv4"
-  ## method 
-  , function(x, na.last = TRUE, decreasing = FALSE){
-    ##    
-    idx <- .Call(
-      ##
-      "Rip_ipv4_qsort0"
-      , x[ !(naidx <- is.na(x)) ]
-      , decreasing ## 
-    )+1L
-    ##
-    if( is.na(na.last) ) idx 
-    else{
-      idx <- ((1:length(x))[!naidx])[idx]
-      if(na.last)       c(idx         , which(naidx) )
-      else if(!na.last) c(which(naidx), idx          )
-    }
-    ##
-  }
+  ##  
+  , IP_order
 )
-## 
-## !!!TODO
+  
+}else{
 ##
 # setMethod(
 #   "ip.order"
 #   ## 
-#   , "IPv4r"
+#   , "IPv4"
 #   ## method 
 #   , function(x, na.last = TRUE, decreasing = FALSE){
+#     ##    
+#     idx <- .Call(
+#       ##
+#       "Rip_ipv4_qsort0"
+#       , if( na <- any.na(x) ) x[ !(naidx <- is.na(x)) ] else x
+#       , decreasing ## 
+#     )+1L
+#     ##
+#     if(!na) return(x)
+#     ##
+#     if( is.na( na.last) ) idx 
+#     else{
+#       idx <- ((1:length(x))[!naidx])[idx]
+#       if(na.last)       c(idx         , which(naidx) )
+#       else if(!na.last) c(which(naidx), idx          )
+#     }
+#     ##
 #   }
 # )
+}
 ##________________________________________________________________________________________________________________________
 ##
 ## 
@@ -1373,6 +1417,25 @@ setMethod(
 ##________________________________________________________________________________________________________________________
 ##
 ## 
+##
+##
+setMethod(
+    "ip.order"
+  , "IPv4r"
+  ##  
+  , function(x, na.last = TRUE, decreasing = FALSE){
+    ##
+    order(x, na.last=na.last, decreasing=decreasing)
+  }
+)
+# setMethod(
+#   "ip.order"
+#   ## 
+#   , "IPv4r"
+#   ##  
+#   , IP_order
+# )
+## 
 ## 
 ##
 setMethod(
@@ -1380,8 +1443,14 @@ setMethod(
   ## 
   , "IPv4r"
   , function(x){
-     ##
-     .Call( 'Rip_ipv4_cvtfl64_0', lo(x))
+    ##
+    idx <- order( .Call( 'Rip_ipv4_cvtfl64_0', lo(x)) , .Call( 'Rip_ipv4_cvtfl64_0', hi(x)) ) 
+    ##
+    res      <- integer(length(x))
+    res[idx] <- seq.int(length(x))
+    if( anyNA(x)) res[ is.na(x) ]  <- NA
+    ##
+    res
   }
 )
 ##________________________________________________________________________________________________________________________
@@ -1509,14 +1578,14 @@ setMethod(
     table <- table[!(na<-is.na(table))]
     ##
     if( (na <- sum(na) ) ) warning("removing ", na, " NA from table")
-    ##
+    ## utile ?
     tb.clnm <- tolower(class(table)) ##'ipv4r'
-    ## ip.
-    idx <- order( 
-      ##
+    ## 
+    idx <- order( ## ip.order
+      ## TODO: table (cf. xtrfm pour IPv4r ) 
       lo(table), hi(table) ## ipv4(table )[['lo']] 
       ##
-      , na.last= NA
+      , na.last= NA ## rm ?
     ) - 1L
     ##
     minmxIdx <- if(overlap){

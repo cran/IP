@@ -75,7 +75,8 @@ uint64_t ipv6_netmask_lo(unsigned masklen)
 {
     return ~ipv6_hostmask_lo(masklen);
 }
-
+ 
+ 
 unsigned ipv6_masklen64(uint64_t lo, uint64_t hi, int offset)
 {
     uint64_t d = (lo ^ hi) + 1;
@@ -93,7 +94,6 @@ unsigned ipv6_masklen64(uint64_t lo, uint64_t hi, int offset)
         t = 32;
         d >>= 32;
     }
-
     b = ffs((uint32_t) d);
     if ((((uint32_t)1U) << (b-1)) != d)
         return ~0;

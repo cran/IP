@@ -85,11 +85,12 @@ setMethod(
       ##
       if(
         ( 
-          class( ip4  )=='IPv4' | class( ip6 )=='IPv6'
+#           class( ip4  )=='IPv4' | class( ip6 )=='IPv6'
+          inherits(ip4, 'IPv4') | inherits(ip6, 'IPv6' )
         )
       ){
 ##
-# cat("IP: init\n")
+# cat("IP: init from ipv*\n")
         ##
         ## 
         ##
@@ -370,7 +371,8 @@ setMethod(
       ## 
       ##
       if(
-        class( lo )=='IP' & ( class( nip  ) %in% c('integer','numeric') )
+#         class( lo )=='IP' & ( class( nip  ) %in% c('integer','numeric') )
+          inherits( lo, 'IP' ) & inherits( nip, c('integer','numeric') )
       ){
 # cat("IPr nip\n")
         ##
@@ -381,7 +383,8 @@ setMethod(
         
       } else if(
         ( 
-          class( lo )=='IP' & class( hi )=='IP'
+#           class( lo )=='IP' & class( hi )=='IP'
+          inherits(lo, 'IP') & inherits(hi, 'IP' )
         )
       ){
         ##
@@ -403,7 +406,8 @@ setMethod(
       ##
       if(
         (## ip4r or ip6r can be NULL
-          (class( ip4r )=='IPv4r') | (class( ip6r )=='IPv6r')
+#         (class( ip4r )=='IPv4r') | (class( ip6r )=='IPv6r')
+          inherits(ip4r, 'IPv4r') | inherits(ip6r, 'IPv6r' )
         )
       ){
         ##

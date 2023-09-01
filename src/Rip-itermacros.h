@@ -2,7 +2,19 @@
 #define STRINGIFY2( x) #x
 #define STRINGIFY(x) STRINGIFY2(x)
 
+#define __RIP_FNAME__( ___PREFIX__, ___IP_VERS__, ___METHOD_NAME__) \
+  ___PREFIX__ ## _ip ## ___IP_VERS__ ## _ ## ___METHOD_NAME__ 
  
+#define __RIP_FNAME( ___PREFIX__, ___IP_VERS__, ___METHOD_NAME__) \
+  __RIP_FNAME__( ___PREFIX__, ___IP_VERS__, ___METHOD_NAME__)
+  
+ 
+#define __IP_FNAME__( ___PREFIX__, ___IP_VERS__, ___METHOD_NAME__) \
+  ___PREFIX__ ## _ip ## ___IP_VERS__ ## _ ## ___METHOD_NAME__ ## _2
+ 
+#define __IP_FNAME( ___PREFIX__, ___IP_VERS__, ___METHOD_NAME__) \
+  __IP_FNAME__( ___PREFIX__, ___IP_VERS__, ___METHOD_NAME__)
+
 #define RIP_ITER1_DCL  \
   int nip=0,i; \
  
@@ -20,6 +32,13 @@
      i < ___nip__ ; \
      i++, i1 = (++i1 == ___nip1__) ? 0 : i1, i2 = (++i2 == ___nip2__) ? 0 : i2 \
   ) \
+
+ 
+#define RIP_ITERATE_NEXT(___nip__,___nip1__,___nip2__) for( \
+     ;  \
+     i < ___nip__ ; \
+     i++, i1 = (++i1 == ___nip1__) ? 0 : i1, i2 = (++i2 == ___nip2__) ? 0 : i2 \
+  ) 
 
 #define RIP_IP_IDSLOT_CP(___Rip_dst__,___Rip_src__) \
   SEXP ___Rip_src__##_Rid=NULL; \
@@ -48,7 +67,7 @@
     if( LENGTH( ___Rip_src__##_Rid )==LENGTH(___dst__) ) setAttrib(___dst__, R_NamesSymbol, duplicate( ___Rip_src__##_Rid ) );\
   }
 
-#if 1
+#if 0
  
 #define RIP_CHECK_IDX(___ip_idxptr, ___i__, ___nip__) \
   if(  ( ___ip_idxptr[___i__] < 0) | ( ___ip_idxptr[___i__] >= ___nip__ )  ){ \
@@ -66,12 +85,15 @@
  
 #else
  
-#define RIP_CHECK_IDX(___ip_idxptr, ___i__, ___nip__) 
+#define RIP_CHECK_IDX(___ip_idxptr, ___i__, ___nip__) \
+  if ((___i__+1) % RIP_NINTERRUPT == 0) R_CheckUserInterrupt();
  
 #endif
 
  
 #define RIP_BEGIN 
+
+ 
 #define RIP_END 
 
 #define RIP_IP_INPUT(___IPv__, ___R_t__,  ___group__, ___fname__, ___fn__) \
@@ -130,7 +152,7 @@ if (dbg>0) Rprintf("\n<arith> " STRINGIFY(___opname__) "\n");   \
   RIP##___IPv__##_SLOTS_GET( Rip ) \
    \
   RIP_##___R_t__##_GET( Rnum ) \
-  nip = ( Rip_nip>0 ) & ( Rnum_n >0 ) ? Rip_nip> Rnum_n ? Rip_nip : Rnum_n : 0; \
+  nip = ( ( Rip_nip>0 ) & ( Rnum_n >0 ) ) ? Rip_nip> Rnum_n ? Rip_nip : Rnum_n : 0; \
 if (dbg>0) Rprintf("alloc nip:%d (%d %d)\n", nip, Rip_nip , Rnum_n);   \
    \
   RIP##___IPv__##_RIP_ALLOC(Res,nip)  \
@@ -197,7 +219,7 @@ if (dbg>0) Rprintf("\n<arith> " STRINGIFY(___opname__) "\n");   \
   RIP##___IPv__##_SLOTS_GET( Rip ) \
    \
   RIP_##___R_t__##_GET( Rnum ) \
-  nip = ( Rip_nip>0 ) & ( Rnum_n >0 ) ? Rip_nip> Rnum_n ? Rip_nip : Rnum_n : 0; \
+  nip = ( ( Rip_nip>0 ) & ( Rnum_n >0 ) ) ? Rip_nip> Rnum_n ? Rip_nip : Rnum_n : 0; \
 if (dbg>0) Rprintf("alloc nip:%d (%d %d)\n", nip, Rip_nip , Rnum_n);   \
    \
   RIP##___IPv__##_RIP_ALLOC(Res,nip)  \
@@ -369,13 +391,31 @@ SEXP Rip_ip##___IPv__##_op2_arith_##___opname__##_0( \
   RIP##___IPv__##_SLOTS_GET( Rip ) \
   RIP##___IPv__##_SLOTS_GET( Rip2 ) \
     \
-  nip = ( Rip_nip>0 ) & ( Rip2_nip >0 ) ? Rip_nip> Rip2_nip ? Rip_nip : Rip2_nip : 0; \
+  nip = ( ( Rip_nip>0 ) & ( Rip2_nip >0 ) ) ? Rip_nip> Rip2_nip ? Rip_nip : Rip2_nip : 0; \
    \
   RIP##___IPv__##_RIP_ALLOC(Res,nip) \
   if( nip<1 ){UNPROTECT(nprotected); RIP##___IPv__##_SLOTS_SET( Res ) return Res;}; \
    \
   Res_nip +=0;   \
   RIP_BEGIN \
+  if( (Rip_nip==Rip2_nip) && ( Rip_nip==RIP##___IPv__##_IP_LEN_GET(Rip) ) && ( RIP##___IPv__##_IP_LEN_GET(Rip)==RIP##___IPv__##_IP_LEN_GET(Rip2) )){ \
+ \
+    for(i=0; i < Rip_nip; i++ ){ \
+      RIP##___IPv__##_ELT_PTR_DCL(Rip, i) \
+      RIP##___IPv__##_ELT_PTR_DCL(Rip2, i) \
+      RIP##___IPv__##_RES_DCL(res) \
+      int valid = ___fn__( \
+         Rip_ip_elt_ptr, Rip2_ip_elt_ptr, resptr \
+      ); \
+      if( valid ){ \
+         RIP##___IPv__##_ITER_SET( Res, i, res) \
+      } \
+      else{ \
+        Res_ip_idxptr[i] = NA_INTEGER; \
+      } \
+    } \
+  }else{ \
+ \
   RIP_ITERATE_STEP(nip, Rip_nip, Rip2_nip){ \
    \
     if( \
@@ -401,6 +441,7 @@ SEXP Rip_ip##___IPv__##_op2_arith_##___opname__##_0( \
       Res_ip_idxptr[i] = NA_INTEGER; \
     } \
    \
+  } \
   } \
   RIP_END \
   RIP##___IPv__##_IS_NA_WARN_REPROTECT( Res, nip, STRINGIFY(___opname__) )   \
@@ -461,17 +502,30 @@ SEXP Rip_ip##___IPvRes__##_op2_arith_##___IPv1__##_##___opname__##_##___IPv2__##
   return Res; \
 } \
 
+#define RIPv4_IP_LEN_GET(___vname__) \
+  LENGTH(___vname__##_ipv4 )
+ 
+#define RIPv4r_IP_LEN_GET(___vname__) \
+  LENGTH(___vname__##_ipr )/2
+ 
+#define RIPv6_IP_LEN_GET(___vname__) \
+  LENGTH(___vname__##_ipv6 )/2
+ 
+#define RIPv6r_IP_LEN_GET(___vname__) \
+  LENGTH(___vname__##_ipv6r )/4
+ 
+ 
 #define RIP_OP2_BOOL(___IPv__, ___opname__,  ___fn__) \
 SEXP Rip_ip##___IPv__##_op2_bool_##___opname__##_0( \
     SEXP Rip1, SEXP Rip2 \
 ){ \
   SEXP Res; \
-  int nprotected=0, nip=0, i,i1,i2, *resptr, nres=0, dbg=RNET_BOOL_DBG;   \
+  int nprotected=0, nip=0, i,i1,i2, *resptr, dbg=RNET_BOOL_DBG;   \
   int idx1=-1, idx2=-1;  \
    \
   RIP##___IPv__##_SLOTS_GET( Rip1 ) \
   RIP##___IPv__##_SLOTS_GET( Rip2 ) \
-  nip = (Rip1_nip >0) & (Rip2_nip>0) ? Rip1_nip > Rip2_nip ? Rip1_nip : Rip2_nip : 0; \
+  nip = ( (Rip1_nip >0) & (Rip2_nip>0) ) ? Rip1_nip > Rip2_nip ? Rip1_nip : Rip2_nip : 0; \
  \
     \
   PROTECT( Res = allocVector(LGLSXP, nip ) ); \
@@ -479,29 +533,43 @@ SEXP Rip_ip##___IPv__##_op2_bool_##___opname__##_0( \
   if( nip<1 ){UNPROTECT(nprotected); return Res;}; \
   resptr = INTEGER( Res ); \
   RIP_BEGIN \
-  RIP_ITERATE_STEP(nip, Rip1_nip, Rip2_nip){ \
-    idx1 = (i1 == 0) ? 0 : idx1+1; \
-    idx2 = (i2 == 0) ? 0 : idx2+1; \
-if(dbg) Rprintf("  [%d] <>%d %d" " <>%d %d\n",  i, i1, Rip1##_ip_idxptr[i1], i2, Rip2##_ip_idxptr[i2] );    \
-    \
-    if(  \
-         ( Rip1_ip_idxptr[i1]==NA_INTEGER )  \
-      || ( Rip2_ip_idxptr[i2]==NA_INTEGER ) \
-    ){ \
-      resptr[i] = NA_INTEGER; \
-      continue; \
-    } \
-    RIP##___IPv__##_ELT_PTR_DCL(Rip1, idx1) \
-    RIP##___IPv__##_ELT_PTR_DCL(Rip2, idx2)\
-    RIP_CHECK_IDX(Rip1##_ip_idxptr, idx1, nip) \
-    RIP_CHECK_IDX(Rip2##_ip_idxptr, idx2, nip)     \
-      \
+  if( (Rip1_nip==Rip2_nip) && ( Rip1_nip==RIP##___IPv__##_IP_LEN_GET(Rip1) ) && ( RIP##___IPv__##_IP_LEN_GET(Rip1)==RIP##___IPv__##_IP_LEN_GET(Rip2) ) ){ \
   \
-    resptr[i] = ___fn__( \
-       Rip1_ip_elt_ptr \
-       , Rip2_ip_elt_ptr \
-    );  \
-    nres++; \
+    for(i=0; i < Rip1_nip; i++ ){ \
+      RIP##___IPv__##_ELT_PTR_DCL(Rip1, i) \
+      RIP##___IPv__##_ELT_PTR_DCL(Rip2, i) \
+      resptr[i] = ___fn__( \
+         Rip1_ip_elt_ptr \
+         , Rip2_ip_elt_ptr \
+      ); \
+        \
+    } \
+  }else{ \
+ \
+    RIP_ITERATE_STEP(nip, Rip1_nip, Rip2_nip){ \
+      idx1 = (i1 == 0) ? 0 : idx1+1; \
+      idx2 = (i2 == 0) ? 0 : idx2+1; \
+if(dbg) Rprintf("  [%d] <>%d %d" " <>%d %d\n",  i, i1, Rip1##_ip_idxptr[i1], i2, Rip2##_ip_idxptr[i2] );    \
+   \
+      if(  \
+           ( Rip1_ip_idxptr[i1]==NA_INTEGER )  \
+        || ( Rip2_ip_idxptr[i2]==NA_INTEGER ) \
+      ){ \
+        resptr[i] = NA_INTEGER; \
+        continue; \
+      } \
+      RIP##___IPv__##_ELT_PTR_DCL(Rip1, idx1) \
+      RIP##___IPv__##_ELT_PTR_DCL(Rip2, idx2) \
+      RIP_CHECK_IDX(Rip1##_ip_idxptr, idx1, nip) \
+      RIP_CHECK_IDX(Rip2##_ip_idxptr, idx2, nip)     \
+        \
+  \
+      resptr[i] = ___fn__( \
+         Rip1_ip_elt_ptr \
+         , Rip2_ip_elt_ptr \
+      );  \
+        \
+    } \
   } \
     \
   RIP_END \
@@ -517,7 +585,7 @@ SEXP Rip_ip##___IPv1__##_op2_bool_##___IPv1__##_##___opname__##_##___IPv2__##_0(
     SEXP Rip1, SEXP Rip2 \
 ){ \
   SEXP Res; \
-  int nprotected=0, nip=0, i,i1,i2, *resptr, nres=0;   \
+  int nprotected=0, nip=0, i,i1,i2, *resptr;   \
   int idx1=-1, idx2=-1;  \
    \
   RIP##___IPv1__##_SLOTS_GET( Rip1 ) \
@@ -550,7 +618,7 @@ SEXP Rip_ip##___IPv1__##_op2_bool_##___IPv1__##_##___opname__##_##___IPv2__##_0(
        Rip1_ip_elt_ptr \
        , Rip2_ip_elt_ptr \
     );  \
-    nres++; \
+      \
   } \
     \
   RIP_END \

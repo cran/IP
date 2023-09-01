@@ -589,6 +589,7 @@
   ___vname__##_ip_elt[0] = ___vname__##_ip_hi_ptr[___vname__##_ip_idxptr[___i__]]; \
   ___vname__##_ip_elt[1] = ___vname__##_ip_lo_ptr[___vname__##_ip_idxptr[___i__]]; \
   uint64_t  *___vname__##_ip_elt_ptr = (uint64_t *) &___vname__##_ip_elt; \
+  \
  \
 
 #define RIPv6r_ELT_PTR_DCL(___vname__, ___i__ ) \

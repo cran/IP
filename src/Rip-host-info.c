@@ -19,13 +19,14 @@
    | (((x) & 0x000000000000ff00ull) << 40)   \
    | (((x) & 0x00000000000000ffull) << 56))
 
-#ifdef _WIN32
+#ifdef _WIN32  
+ 
 #include <windows.h>
 #include <ws2tcpip.h>
  
 int Rip_wstart = 0;
  
-void Rip_WSAStartup(){
+void Rip_WSAStartup(void){
    
   if( Rip_wstart!=1 ){
      
@@ -40,7 +41,7 @@ void Rip_WSAStartup(){
   }
 }
  
-SEXP Rip_WSACleanup(){
+SEXP Rip_WSACleanup(void){
   int rc = 0;
   if( Rip_wstart==1 ){
      
@@ -53,12 +54,18 @@ SEXP Rip_WSACleanup(){
 }
 #else
  
-SEXP Rip_WSACleanup(){
-  return ScalarInteger(0);
+SEXP Rip_WSAStartup(void){
+  error("calling WSAStartup function in a non-Windows environment");
+  return R_NilValue;
+}
+ 
+SEXP Rip_WSACleanup(void){
+  error("calling WSACleanup function in a non-Windows environment");
+  return R_NilValue;
 }
 #endif 
 
-#if 1
+#if defined( __RIP_IDN__ ) && ( defined(__unix__) || defined( _WIN32 ) )
 
 #include <stringprep.h>  
 #include <punycode.h>
@@ -76,16 +83,18 @@ SEXP
   if( !isEnvironment(rho) ) error("rho is not an environment");
    
   SEXP Rip_idn_IDNA_DEFAULT = ScalarInteger(0);
-  defineVar(install("IDNA_DEFAULT") , Rip_idn_IDNA_DEFAULT, rho );
+  setVar(install("IDNA_DEFAULT") , Rip_idn_IDNA_DEFAULT, rho );
    
   SEXP Rip_idn_IDNA_ALLOW_UNASSIGNED = ScalarInteger(IDNA_ALLOW_UNASSIGNED);
  
-  defineVar(install("IDNA_ALLOW_UNASSIGNED") , Rip_idn_IDNA_ALLOW_UNASSIGNED, rho );
+  setVar(install("IDNA_ALLOW_UNASSIGNED") , Rip_idn_IDNA_ALLOW_UNASSIGNED, rho );
    
   SEXP Rip_idn_IDNA_USE_STD3_ASCII_RULES = ScalarInteger(IDNA_USE_STD3_ASCII_RULES);
-  defineVar(install("IDNA_USE_STD3_ASCII_RULES") , Rip_idn_IDNA_USE_STD3_ASCII_RULES, rho );
+  setVar(install("IDNA_USE_STD3_ASCII_RULES") , Rip_idn_IDNA_USE_STD3_ASCII_RULES, rho );
    
-  return R_NilValue;
+  setVar(install("IP_IDN") , ScalarLogical(1), rho );
+   
+  return ScalarLogical(1);
 }
 
 #define RIP_IDN_0(___fn__, ___fname__) \
@@ -96,11 +105,11 @@ SEXP Rip_idn_##___fname__##_0( \
   RIP_string_GET(Rinput) \
   nprotected++; \
   RIP_int32_GET( Rflags ) \
+    \
   n = ( Rinput_n>0 ) & ( Rflags_n >0 ) ? Rinput_n> Rflags_n ? Rinput_n : Rflags_n : 0;  \
-  if( ((Rinput_n > Rflags_n) ? Rinput_n % Rflags_n : Rflags_n % Rinput_n) != 0 ) warning(_("longer object length is not a multiple of shorter object length")); \
+   \
   RIP_string_ALLOC(Routput, n) \
- \
-  if( Rinput_n==0 ) return Routput; \
+  if( n==0 ){UNPROTECT(nprotected); return Routput; }\
    \
   RIP_ITERATE_STEP(n, Rinput_n, Rflags_n){  \
    \
@@ -119,7 +128,7 @@ SEXP Rip_idn_##___fname__##_0( \
     } \
     RIP_string_NA_SET( Routput, i ) \
   } \
-  UNPROTECT(1); \
+  UNPROTECT(nprotected); \
   return Routput; \
 }
 
@@ -146,12 +155,13 @@ SEXP
     warning("%s for '%s'",  idna_strerror(rc), CHAR(Rinput) );
     return 0;
   }
-
-  SEXP Routput = PROTECT(
-    mkChar(reEnc(output, CE_UTF8, getCharCE( Rinput ), 1))
-  );
  
    
+  SEXP Routput = PROTECT(
+     
+    mkCharLenCE(output, strlen(output), CE_UTF8)
+  );
+
   free(output);
  
   UNPROTECT(1);
@@ -185,7 +195,9 @@ SEXP
   }
    
   Rval =  PROTECT(
-    mkChar(reEnc(output, CE_UTF8, getCharCE(Rinput), 1))
+     
+    mkCharLenCE(output, strlen(output), CE_UTF8)
+     
   );
    
   free(output);
@@ -234,24 +246,40 @@ RIP_IDN_0(Rip_puny_encode_0, puny_encode)
 
 #else
 
+#define RIP_IDN_MISSING_ERRMSG \
+  "IP package was compiled without libidn."
+ 
 SEXP Rip_idn_defineGlobalVar_0(
     SEXP rho
 ){
-  error("unavailable function %s", __func__);
+   
+   
+  return ScalarLogical(0);
 }
  
 SEXP Rip_idn_idna_encode_0( 
   SEXP Rinput, SEXP Rflags 
 ){ 
-  error("unavailable function %s", __func__);
+  error(
+     RIP_IDN_MISSING_ERRMSG  
+  );
+   
+  return R_NilValue;
 }
  
 SEXP Rip_idn_idna_decode_0( 
   SEXP Rinput, SEXP Rflags 
 ){ 
-  error("unavailable function %s", __func__);
+  error(
+    RIP_IDN_MISSING_ERRMSG  
+  );
+   
+  return R_NilValue;
 }
-#endif
+ 
+#undef RIP_IDN_MISSING_ERRMSG
+
+#endif  
 
 #if 1
  
@@ -665,7 +693,7 @@ Rprintf("      %" PRIu64 " %" PRIu64 "\n"
 #endif
 }
 
-SEXP Rip_ifaddrs_0(){ 
+SEXP Rip_ifaddrs_0(void){ 
  
 #if defined (__unix__) || (defined (__APPLE__)  )
      

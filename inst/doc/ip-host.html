@@ -25,6 +25,7 @@
     </style>
 
 
+
 <style type="text/css">
   code {
     white-space: pre;
@@ -104,13 +105,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   for (var i = 0; i < sheets.length; i++) {
     if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
     try { var rules = sheets[i].cssRules; } catch (e) { continue; }
-    for (var j = 0; j < rules.length; j++) {
+    var j = 0;
+    while (j < rules.length) {
       var rule = rules[j];
       // check if there is a div.sourceCode rule
-      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
       var style = rule.style.cssText;
       // check if color or background-color is set
-      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
       // replace div.sourceCode by a pre.sourceCode rule
       sheets[i].deleteRule(j);
       sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
@@ -334,7 +342,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <li>rir.names() : Regional Internet Registry names</li>
 </ul>
 <p>as well as matching addresses and range addresses with the ip.match() methods.</p>
-<p>Please note that Windows support for host() methods is still experimental.</p>
+<p>Please note that, depending on your platform, support for some functions may still be experimental or missing. In addition, this vignette was precomputed so that the results do match the text and results may differ if things changed in the meantime.</p>
 <div id="first-example" class="section level1">
 <h1>First Example</h1>
 <p>Let’s start with DN lookup :</p>
@@ -373,7 +381,10 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>Österreich, alles klar. And</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">rhost.whois &lt;-<span class="st"> </span><span class="kw">whois</span>(<span class="kw">ipv4</span>(rhost),<span class="dt">verbose =</span> <span class="dv">2</span>, <span class="dt">output=</span><span class="dv">1</span>)</a></code></pre></div>
 <pre><code>## whois: 137.208.57.37 NA 
-## referer: whois.arin.net whois.arin.net</code></pre>
+## refer:' whois.arin.net whois.arin.net '
+## refer:'whois.arin.net'
+## query:' n +  137.208.57.37 
+##  '</code></pre>
 <div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1">rhost.whois[[<span class="st">'r-project.org'</span>]][<span class="st">'Organization'</span>]</a></code></pre></div>
 <pre><code>##                              Organization 
 ## &quot;RIPE Network Coordination Centre (RIPE)&quot;</code></pre>
@@ -389,57 +400,57 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <p>As stated before, host() queries may return one or more address for a single host :</p>
 <div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1">h &lt;-<span class="st"> </span><span class="kw">host</span>(dn &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;r-project.org&quot;</span>, <span class="st">&quot;cloud.r-project.org&quot;</span> ))</a>
 <a class="sourceLine" id="cb21-2" title="2">h</a></code></pre></div>
-<pre><code>##                                                                                                                                                                                                                                                                                                                                         r-project.org 
-##                                                                                                                                                                                                                                                                                                                                       &quot;137.208.57.37&quot; 
-##                                                                                                                                                                                                                                                                                                                                   cloud.r-project.org 
-## &quot;99.86.91.71,99.86.91.45,99.86.91.16,99.86.91.6--2600:9000:2117:8a00:6:c2d3:f940:93a1,2600:9000:2117:aa00:6:c2d3:f940:93a1,2600:9000:2117:c00:6:c2d3:f940:93a1,2600:9000:2117:8800:6:c2d3:f940:93a1,2600:9000:2117:3a00:6:c2d3:f940:93a1,2600:9000:2117:0:6:c2d3:f940:93a1,2600:9000:2117:a200:6:c2d3:f940:93a1,2600:9000:2117:fa00:6:c2d3:f940:93a1&quot;</code></pre>
+<pre><code>##                                                                                                                                                                                                                                                                                                                                                  r-project.org 
+##                                                                                                                                                                                                                                                                                                                                                &quot;137.208.57.37&quot; 
+##                                                                                                                                                                                                                                                                                                                                            cloud.r-project.org 
+## &quot;18.244.28.31,18.244.28.115,18.244.28.78,18.244.28.49--2600:9000:262b:2200:6:c2d3:f940:93a1,2600:9000:262b:1c00:6:c2d3:f940:93a1,2600:9000:262b:e00:6:c2d3:f940:93a1,2600:9000:262b:7400:6:c2d3:f940:93a1,2600:9000:262b:c200:6:c2d3:f940:93a1,2600:9000:262b:b800:6:c2d3:f940:93a1,2600:9000:262b:1000:6:c2d3:f940:93a1,2600:9000:262b:8800:6:c2d3:f940:93a1&quot;</code></pre>
 <div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="kw">length</span>(h)</a></code></pre></div>
 <pre><code>## [1] 2</code></pre>
 <p>But the returned object has the same length as the input vector so we can use in a data.frame :</p>
 <div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1"><span class="kw">data.frame</span>(dn, h)</a></code></pre></div>
-<pre><code>##                    dn
-## 1       r-project.org
-## 2 cloud.r-project.org
-##                                                                                                                                                                                                                                                                                                                                                     h
-## 1                                                                                                                                                                                                                                                                                                                                       137.208.57.37
-## 2 99.86.91.71,99.86.91.45,99.86.91.16,99.86.91.6--2600:9000:2117:8a00:6:c2d3:f940:93a1,2600:9000:2117:aa00:6:c2d3:f940:93a1,2600:9000:2117:c00:6:c2d3:f940:93a1,2600:9000:2117:8800:6:c2d3:f940:93a1,2600:9000:2117:3a00:6:c2d3:f940:93a1,2600:9000:2117:0:6:c2d3:f940:93a1,2600:9000:2117:a200:6:c2d3:f940:93a1,2600:9000:2117:fa00:6:c2d3:f940:93a1</code></pre>
+<pre><code>##                                      dn
+## r-project.org             r-project.org
+## cloud.r-project.org cloud.r-project.org
+##                                                                                                                                                                                                                                                                                                                                                                                h
+## r-project.org                                                                                                                                                                                                                                                                                                                                                      137.208.57.37
+## cloud.r-project.org 18.244.28.31,18.244.28.115,18.244.28.78,18.244.28.49--2600:9000:262b:2200:6:c2d3:f940:93a1,2600:9000:262b:1c00:6:c2d3:f940:93a1,2600:9000:262b:e00:6:c2d3:f940:93a1,2600:9000:262b:7400:6:c2d3:f940:93a1,2600:9000:262b:c200:6:c2d3:f940:93a1,2600:9000:262b:b800:6:c2d3:f940:93a1,2600:9000:262b:1000:6:c2d3:f940:93a1,2600:9000:262b:8800:6:c2d3:f940:93a1</code></pre>
 <p>Use the following methods to get the actual addresses :</p>
 <div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1"><span class="kw">ipv4</span>(h)</a></code></pre></div>
 <pre><code>##       r-project.org cloud.r-project.org cloud.r-project.org cloud.r-project.org 
-##     &quot;137.208.57.37&quot;       &quot;99.86.91.71&quot;       &quot;99.86.91.45&quot;       &quot;99.86.91.16&quot; 
+##     &quot;137.208.57.37&quot;      &quot;18.244.28.31&quot;     &quot;18.244.28.115&quot;      &quot;18.244.28.78&quot; 
 ## cloud.r-project.org 
-##        &quot;99.86.91.6&quot;</code></pre>
+##      &quot;18.244.28.49&quot;</code></pre>
 <div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1"><span class="kw">ipv6</span>(h)</a></code></pre></div>
 <pre><code>##                          r-project.org                    cloud.r-project.org 
-##                                     NA &quot;2600:9000:2117:8a00:6:c2d3:f940:93a1&quot; 
+##                                     NA &quot;2600:9000:262b:2200:6:c2d3:f940:93a1&quot; 
 ##                    cloud.r-project.org                    cloud.r-project.org 
-## &quot;2600:9000:2117:aa00:6:c2d3:f940:93a1&quot;  &quot;2600:9000:2117:c00:6:c2d3:f940:93a1&quot; 
+## &quot;2600:9000:262b:1c00:6:c2d3:f940:93a1&quot;  &quot;2600:9000:262b:e00:6:c2d3:f940:93a1&quot; 
 ##                    cloud.r-project.org                    cloud.r-project.org 
-## &quot;2600:9000:2117:8800:6:c2d3:f940:93a1&quot; &quot;2600:9000:2117:3a00:6:c2d3:f940:93a1&quot; 
+## &quot;2600:9000:262b:7400:6:c2d3:f940:93a1&quot; &quot;2600:9000:262b:c200:6:c2d3:f940:93a1&quot; 
 ##                    cloud.r-project.org                    cloud.r-project.org 
-##    &quot;2600:9000:2117:0:6:c2d3:f940:93a1&quot; &quot;2600:9000:2117:a200:6:c2d3:f940:93a1&quot; 
+## &quot;2600:9000:262b:b800:6:c2d3:f940:93a1&quot; &quot;2600:9000:262b:1000:6:c2d3:f940:93a1&quot; 
 ##                    cloud.r-project.org 
-## &quot;2600:9000:2117:fa00:6:c2d3:f940:93a1&quot;</code></pre>
+## &quot;2600:9000:262b:8800:6:c2d3:f940:93a1&quot;</code></pre>
 <div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1"><span class="kw">ip</span>(h)</a></code></pre></div>
 <pre><code>##                          r-project.org                    cloud.r-project.org 
-##                        &quot;137.208.57.37&quot;                          &quot;99.86.91.71&quot; 
+##                        &quot;137.208.57.37&quot;                         &quot;18.244.28.31&quot; 
 ##                    cloud.r-project.org                    cloud.r-project.org 
-##                          &quot;99.86.91.45&quot;                          &quot;99.86.91.16&quot; 
+##                        &quot;18.244.28.115&quot;                         &quot;18.244.28.78&quot; 
 ##                    cloud.r-project.org                          r-project.org 
-##                           &quot;99.86.91.6&quot;                                     NA 
+##                         &quot;18.244.28.49&quot;                                     NA 
 ##                    cloud.r-project.org                    cloud.r-project.org 
-## &quot;2600:9000:2117:8a00:6:c2d3:f940:93a1&quot; &quot;2600:9000:2117:aa00:6:c2d3:f940:93a1&quot; 
+## &quot;2600:9000:262b:2200:6:c2d3:f940:93a1&quot; &quot;2600:9000:262b:1c00:6:c2d3:f940:93a1&quot; 
 ##                    cloud.r-project.org                    cloud.r-project.org 
-##  &quot;2600:9000:2117:c00:6:c2d3:f940:93a1&quot; &quot;2600:9000:2117:8800:6:c2d3:f940:93a1&quot; 
+##  &quot;2600:9000:262b:e00:6:c2d3:f940:93a1&quot; &quot;2600:9000:262b:7400:6:c2d3:f940:93a1&quot; 
 ##                    cloud.r-project.org                    cloud.r-project.org 
-## &quot;2600:9000:2117:3a00:6:c2d3:f940:93a1&quot;    &quot;2600:9000:2117:0:6:c2d3:f940:93a1&quot; 
+## &quot;2600:9000:262b:c200:6:c2d3:f940:93a1&quot; &quot;2600:9000:262b:b800:6:c2d3:f940:93a1&quot; 
 ##                    cloud.r-project.org                    cloud.r-project.org 
-## &quot;2600:9000:2117:a200:6:c2d3:f940:93a1&quot; &quot;2600:9000:2117:fa00:6:c2d3:f940:93a1&quot;</code></pre>
+## &quot;2600:9000:262b:1000:6:c2d3:f940:93a1&quot; &quot;2600:9000:262b:8800:6:c2d3:f940:93a1&quot;</code></pre>
 <p>As we have seen before, the r-project.org host has only one IPv4 address and no IPv6. On the other end, the cloud.r-project.org host has four IPv4 addresses and height IPv6 addresses.</p>
 <p>RIR lookup returns ARIN again for all addresses</p>
 <div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1"><span class="kw">ipv4.rir</span>()[<span class="kw">ip.match</span>(<span class="kw">ipv4</span>(h),<span class="kw">ipv4.rir</span>())]</a></code></pre></div>
 <pre><code>##          ARIN          ARIN          ARIN          ARIN          ARIN 
-## &quot;137.0.0.0/8&quot;  &quot;99.0.0.0/8&quot;  &quot;99.0.0.0/8&quot;  &quot;99.0.0.0/8&quot;  &quot;99.0.0.0/8&quot;</code></pre>
+## &quot;137.0.0.0/8&quot;  &quot;18.0.0.0/8&quot;  &quot;18.0.0.0/8&quot;  &quot;18.0.0.0/8&quot;  &quot;18.0.0.0/8&quot;</code></pre>
 <p>But this times rightfully so for the cloud.r-project.org domain which is hosted by Amazon as shown by this whois query :</p>
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb35-1" title="1">w &lt;-<span class="st"> </span><span class="kw">whois</span>(<span class="kw">ipv6</span>(h)[<span class="st">&quot;cloud.r-project.org&quot;</span>][<span class="dv">1</span>])</a>
 <a class="sourceLine" id="cb35-2" title="2">w[[<span class="dv">1</span>]][<span class="st">'OrgName'</span>]</a></code></pre></div>
@@ -456,23 +467,24 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 ## &quot;xn--bcher-kva.de&quot;</code></pre>
 <p>“bücher.de” becomes “xn–bcher-kva.de”. And now, back to the original string :</p>
 <div class="sourceCode" id="cb39"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb39-1" title="1"><span class="kw">fromIdna</span>(dni)</a></code></pre></div>
-<pre><code>## [1] &quot;bücher.de&quot;</code></pre>
+<pre><code>## xn--bcher-kva.de 
+##      &quot;bücher.de&quot;</code></pre>
 <p>Unfortunately, this doesnot always work —believe it or not, this is an actual domain name— :</p>
 <div class="sourceCode" id="cb41"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb41-1" title="1">dn &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;💩.la&quot;</span>)</a>
 <a class="sourceLine" id="cb41-2" title="2"><span class="kw">toIdna</span>(dn)</a></code></pre></div>
 <pre><code>## Warning in toIdna(dn): String preparation failed for '💩.la'</code></pre>
 <pre><code>## 💩.la 
-##   NA</code></pre>
+##    NA</code></pre>
 <p>In that case, we need to use this flag :</p>
 <div class="sourceCode" id="cb44"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb44-1" title="1"><span class="kw">toIdna</span>(dn,  <span class="st">&quot;IDNA_ALLOW_UNASSIGNED&quot;</span>)</a></code></pre></div>
-<pre><code>##          💩.la 
+<pre><code>##         💩.la 
 ## &quot;xn--ls8h.la&quot;</code></pre>
 <p>Now, let’s see what happens when trying to get the hosts IP address :</p>
 <div class="sourceCode" id="cb46"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb46-1" title="1">dn &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;bücher.de&quot;</span>, <span class="st">&quot;💩.la&quot;</span>)</a>
 <a class="sourceLine" id="cb46-2" title="2">flags &lt;-<span class="kw">rep</span>( <span class="kw">c</span>( <span class="st">&quot;IDNA_DEFAULT&quot;</span> , <span class="st">&quot;IDNA_ALLOW_UNASSIGNED&quot;</span>), <span class="dt">each =</span> <span class="kw">length</span>(dn))</a>
 <a class="sourceLine" id="cb46-3" title="3">dni &lt;-<span class="st"> </span><span class="kw">c</span>(dn, <span class="kw">toIdna</span>( dn, flags))</a>
 <a class="sourceLine" id="cb46-4" title="4"><span class="kw">host</span>(dni)</a></code></pre></div>
-<pre><code>##        bücher.de             💩.la xn--bcher-kva.de             &lt;NA&gt; 
+<pre><code>##        bücher.de            💩.la xn--bcher-kva.de             &lt;NA&gt; 
 ##               NA               NA    &quot;45.87.158.7&quot;               NA 
 ## xn--bcher-kva.de      xn--ls8h.la 
 ##    &quot;45.87.158.7&quot;  &quot;38.103.165.38&quot;</code></pre>

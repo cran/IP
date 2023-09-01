@@ -92,14 +92,17 @@
 ipv4("192.0.0.1") + 1
 ipv6("fd00::1") + 1
 ip(c("192.0.0.1", "fd00::1")) + 1
-\dontrun{
-## raises an error 
-1L - ipv4("192.0.0.1")
+
+##
+## Prohibited Arith operations
+##
+## this raises an error 
+tryCatch(1L - ipv4("192.0.0.1"), error=function(e) e )
 ## and so will 
-1 + ipv6("fd00::1")
+tryCatch(1 + ipv6("fd00::1"), error=function(e) e )
 ## as well as
-ipv4("192.0.0.1") * 2
-}
+tryCatch(ipv4("192.0.0.1") * 2, error=function(e) e )
+
 ##
 ## Loss of precision in arithmetical operations
 ##

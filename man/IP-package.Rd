@@ -21,7 +21,7 @@
   %%
   The IP package provides vector-like classes and methods for Internet Protocol (IP) addresses. %%
   It is based on the ip4r PostgreSQL extension available at \url{https://github.com/RhodiumToad/ip4r}.
-  %%
+  
   An IP address is a numerical label assigned to each device connected to a computer network that uses the Internet Protocol for communication. %
   The Internet Protocol uses those labels to identify nodes such as host or network interface for relaying datagrams between them across network boundaries.
 
@@ -50,53 +50,48 @@
   }%%
   The IP package also provides methods for arithmetic, comparison and bitwise unary and binary operations in addition to sorting and lookup and querying information about IP addresses and domain names. %% 
   All operators are not available for all classes mostly by design but a few are still missing because they have not been implemented yet. IP objects can also be subseted or stored in a \code{data.frame} and serialized. 
-  %%
+  
   The IP and IPr classes are only convenience containers for instances when addresses must be created from vectors mixing both protocols. %%
   The IPv4 and IPv6 protocols and their corresponding IP representation are indeed very different in many respects so only a subset of methods are available for them. In addition, methods for those containers tend to run slower because, at the moment, they need to make two passes (one for IPv4* and one for IPv6* objects). %%
   Use the \code{ipv4(IP)} (resp. \code{ipv4r(IPr)}) and \code{ipv6(IP)} (resp. \code{ipv6r(IP)}) getters to work with v4 and v6 objects separately.
   
 %%
-\subsection{Design considerations }{
+\subsection{Design considerations}{
   %%
-  IP objects were designed to behave as much as possible like base R atomic vectors. %%
-  % Many fuctions calls work out-the-box table(IP*), factor(IP*),\ldots
-  % But there are a few caveats.
-  % In some case, it is necessary to coerce to character, for instance when using the
-  % \code{match()} function which is unfortunenately not generic. So 
-  % merge() by one IP objects. There is no need for coercion when there are two or more keys.
-  But, in order to do so, objects must inherit a base R vector class for which many, many methods are available (from base R or other packages). %%
-  Hence, \bold{calling a method that is not exported from the IP package namespace on a IP object may not yield what you want} (but some do work -- see next paragraph). %%
-  Reason is that the vector from which IP objects inherit from the atomic vector class %%
-  does not hold IP* addresses but an integer zero-based index to them. When calling a non-IP method, R will first look for a method for this particular object. If none is found, it will try to find one for the class this object inherits from. Hence, the call will operate on the index, and not on the object as a hole. %%
-  For instance, the IP does not provide a \code{`*`} operator at the moment. In earlier versions of the package, multiplying an IP* by any number ended up multiplying the index by a number and eventually just mess the index up. %%
-  Also \code{ipv4("0.0.0.0")==0L} and \code{ipv4("0.0.0.1")==0L} both returned \code{TRUE} because comparison between an IP object and an integer is not provided by the package. As a consequence, comparison defaulted to , \code{.Data} part of the object which holds the index. 
-  This kind of unwanted effects of inheritance has been fixed for a number of base \R functions but the problem remains for a number of \R functions (see \code{match()}) and functions defined in other packages.%%
-  In this case, further operations on the object will raise an error but there are instances where this will silently fail.
+  IP objects were designed to behave as much as possible like base R atomic vectors. 
+  Therefore many R base functions such as \code{table()} or \code{factor()} or merging two \code{data.frame} using IP objects as keys work.
   
-  Indeed, some functions calls  such as \code{length()}, \code{is.na()}, \code{table()}, \code{factor()},\code{rev()},\ldots work out-the-box as intended. %
-  But there are a few caveats. %
-  In some case, it is necessary to coerce to character. For instance when calling functions that the \code{match()}, match will operate on the index of the IP* object, not on the object as a whole.  
-  This is why the \code{ip.match()} method is provided as a replacement. %
-  To avoid some unwanted effects, the IP package also makes \code{match()} a generic function but this won't change the behavior of function calling it in other packages or base \R.
+  But there are a few caveats when using functions or methods not provided by the IP package in which case you \bold{may have to convert to the character representation of the addresses}.
   
-  As a consequence, calling \code{merge()} on two \code{data.frame} using one single IP object as the by variable will merge the \code{data.frame} by IP* index, not by IP. %
-  But, on the other end, there is no need for coercion when there are two or more IP* keys or when mixing IP* objects with other vectors types, because, in this case, keys are all converted to character and pasted before matching. % 
+  IP objects are S4 objects that all inherit from the integer class 
+  and because of this there are instances where function calls will operate on the inherited integer \code{.Data} part of the object only. 
+  As of writing, this is for example the case for the \code{nchar} function which returns the number of characters of the .Data vector only. But \code{grep} works because the x argument to the function is explicitly coerced to character before further processing.
   
-  So, when calling a non-IP method on any IP object, \bold{either convert to character or first check the result before further processing}.
+  The .Data slot does not hold the addresses but an index to the addresses. 
+  When calling a non-IP method, \R will first look for a method for this particular object. If none is found, it will try to find one for the class this object inherits from. Hence, the call will operate on the index, and not on the object as a hole. 
+  This is why some operations are explicitly blacklisted such as multiplication. Since there are no \code{`*`} for IP objects, multiplying an IP with a number would otherwise fall back to multiplying the index by this number, thus badly damaging the object.
   
-  The reasons for using an index are twofold. First, each IP address space use the entire 32 (resp. 128) bits integer range. Thus, no value can be used for NA. %%
+  %% Much care has been taken to avoid this sort of situation. XXX
+  
+  Reasons for using an index are twofold. First, each IP address space use the entire 32 (resp. 128) bits integer range. Thus, no value can be used for NA. %%
   For instance, R defines \code{NA_integer_} as \eqn{2^{31}} which a perfectly valid IP v4 address ("128.0.0.0"). %%
-  Second reason is IP words size. An IPv4 address uses 32 bits and thus can be stored using an integer vector (and IPv4 address ranges uses 64 bits and could be stored using a numeric vector). But an IP v6 address uses 128 bits and an IP v6 address range uses 256 bits and currently no \R built-in atomic vectors are wide enough to hold them. IP addresses other than IPv4 have to be stored in a separate matrix and an index is needed to retrieve their value.
+  Second reason is IP words size. An IPv4 address uses 32 bits and thus can be stored using an integer vector (and IPv4 address ranges uses 64 bits and could be stored using a numeric vector). But an IP v6 address uses 128 bits and an IP v6 address range uses 256 bits and currently no \R built-in atomic vectors are wide enough to hold them. IP addresses other than IPv4 have to be stored in a separate matrix and the index is used to retrieve their value.
   
   Therefore, each IP* object has an index which either points to the IP location in a table or mark the value as NA. %%
   This way \R believes it is dealing with a regular vector but at the cost of increased memory consumption. %%
   The memory footprint is a function of the number of NA.
-}
   
-%%\bold{Data protection}
+  On the other end, this design makes it easy to know if there are any NA and, if none, skip NA checking which makes things faster.
+}
 %%
-\subsection{Data protection }{
-  %%
+\subsection{SIMD support}{
+
+  The IP package provide an experimental support for AVX2 vectorized operations for IP comparison and arithmetic. 
+  To enable AVX2 support, please pass the \code{"--enable-avx2"} \code{configure.args} argument to the \code{install.packages()} function. 
+}
+%%
+\subsection{Data protection}{
+  
   One last caveat. In certain countries such as EU member countries, IP addresses are considered personal data (see Article 29 Working Party Opinion 4/2007 and ECJ ruling dated 19 October 2016 --ref.: C582/14). IP processing must therefore be done in accordance to the applicable laws and regulations.
 }
 }

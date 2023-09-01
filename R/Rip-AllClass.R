@@ -179,7 +179,7 @@ setClass(
   , prototype = prototype(
       hostname      = NULL
     , ipv4          = NULL, ipv6      = NULL
-    , ipv4.hptr     = NULL, ipv6.hptr  = NULL
+    , ipv4.hptr     = NULL, ipv6.hptr  = NULL ## total # of IP address for each host
     , ipv4.hostinfo = NULL, ipv6.hostinfo = NULL
   )
 )

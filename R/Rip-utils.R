@@ -4,21 +4,42 @@
 ##
 ##________________________________________________________________________________________________________________________
 ##
+IP_AVX2 <- F
+## 
+IP_IDN <- F
+##
+avx2.support <- function() IP_AVX2
+##
+ip.capabilities <- function(){
+  c(
+      AVX2 = IP_AVX2
+    , IDN  = IP_IDN
+  )
+}
+## FIXME: 
+#  namespace can be loaded without the namespace being attached (e.g. by pkgname::fun) and that a package can be detached and re-attached whilst its namespace remains loaded
 ##
 .onLoad <- function(libname, pkgname){
+  ##
   .Call("Rip_init")
+  ##
+  .Call("Rip_defineGlobalVar_0", e <- parent.env(environment()) )
   ##
 #   e <- parent.env(environment())
 #   packageStartupMessage( paste( 
 #     "assigning in", deparse(substitute(e))
 #   ))
   ## CHK
-  .Call("Rip_idn_defineGlobalVar_0", parent.env(environment()))
+  .Call("Rip_idn_defineGlobalVar_0", e)
+  ##
+  IdnaFlags <- c(IDNA_DEFAULT, IDNA_ALLOW_UNASSIGNED, IDNA_USE_STD3_ASCII_RULES)
+  names(IdnaFlags) <- c("IDNA_DEFAULT", "IDNA_ALLOW_UNASSIGNED", "IDNA_USE_STD3_ASCII_RULES")
+  assign("IdnaFlags", IdnaFlags, e)
 }
-##
+## ¿ .Last.lib ?
 .onUnload <- function(libpath){
   ## WSA
-  rc <- .Call("Rip_WSACleanup")
+  if( .Platform$OS.type=="windows" ) rc <- .Call("Rip_WSACleanup")
   ##
   library.dynam.unload("IP", libpath)
 }
@@ -49,7 +70,7 @@ ip.slotname <- function(cl){
 ##________________________________________________________________________________________________________________________
 ##
 ## 
-## ? test NA : nope
+## ¿ test NA ? nope
 ## 
 ## 
 IP_getId <- function(x) x@id
@@ -60,7 +81,7 @@ IP_setId <- function(x,value){
   ##
   if( !length(value) ){
     ##
-    warning(if( is.null(value) ) "NULL" else  "empty", " names" )
+#     warning(if( is.null(value) ) "NULL" else  "empty", " names" )
     ##
     return(x)
   }
@@ -129,11 +150,19 @@ IP_setId_replace <- function(x,i,value){
 #     x@id[i] <- value@id[i]
 #   }
   ##!is.null
-  if( length(value@id) ){
+#   if( length(value@id) ){
+#     ##is.null
+#     if( !length(x@id) ) x@id <- rep(NA_character_, length(x@.Data))
+#     ##
+#     x@id[i] <- value@id
+  ##
+  nm <- names(value)
+  ##
+  if( length(nm) ){
     ##is.null
     if( !length(x@id) ) x@id <- rep(NA_character_, length(x@.Data))
     ##
-    x@id[i] <- value@id
+    x@id[i] <- nm ## value@id
 
   }else if( length(x@id) ){
     ##

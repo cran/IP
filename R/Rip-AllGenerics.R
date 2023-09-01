@@ -7,11 +7,13 @@
 ##
 ## 
 ##
-setClassUnion(".__IPvr__.", c("IPv4", "IPv6", "IP", "IPv4r", "IPv6r", "IPr"))
-##
 setClassUnion(".__IP__.", c("IPv4", "IPv6", "IP"))
 ##
 setClassUnion(".__IPr__.", c("IPv4r", "IPv6r", "IPr"))
+##
+setClassUnion(".__IPvr__.", c("IPv4", "IPv6", "IP", "IPv4r", "IPv6r", "IPr"))
+##
+setClassUnion(".__ipvr__.", c("IPv4", "IPv6", "IPv4r", "IPv6r"))
 ## 
 ##
 ##
@@ -20,6 +22,13 @@ setClassUnion(".__subscript__.", c("numeric", "integer", "logical"))
 setClassUnion(".__intFP__.", c("numeric", "integer"))
 ##________________________________________________________________________________________________________________________
 ##
+## promoting is.integer to generic seems prohibited
+##
+## setGeneric |is.primitive(f) -> methods:::genericForBasic -> methods:::.BasicFunsList[[f]] -> F
+##
+# setGeneric("is.integer", function(x){standardGeneric("is.integer")})
+##
+# setGeneric("is.integer", signature = "x")
 ## 
 ##
 ##
@@ -69,6 +78,12 @@ setGeneric("ip.version", function(ip,...){
 ##
 ##
 ##
+# setGeneric("any.na", function(x){
+#   standardGeneric("any.na")
+# })
+##
+##
+##
 setGeneric("id", function(x){
   standardGeneric("id")
 })
@@ -109,11 +124,55 @@ setMethod(
   }
 )
 ##
-## 
+## getGroupMembers("Summary")
 ##
-`Summary..__IPvr__.` <- function(...){
-    stop("Summary IPvr : unimplemented method ", .Generic, " for classes ", class( as.list(...)[[1]]) )
+setMethod(
+  "Summary" ##
+  ## 
+  , signature(x = ".__IPvr__.")
+  , function(x, ..., na.rm = FALSE){
+    ##
+    cat("Summary\n")
+    ##
+    if(
+      .Generic %in% c( "min",   "max", "range" )
+    ){
+      x <- sort(x,  na.last= if( na.rm ) NA else F )
+      ##
+      n <- length(x)
+      ##
+      x1 <- x[1]
+      ##
+      if( .Generic=="min" ){
+        return( x1 )
+      }else if( .Generic=="max" ){
+        return( 
+          if( is.na(x1) ) x1 else x[n]  
+        )
+      }else{
+        return(
+          if( is.na(x1) ) c(x1, x1) else x[c(1,n)] 
+        )
+      }
+    }
+    else stop("Summary IPvr : unimplemented method ", .Generic, " for classes ", class(x) )
   }
+)
+##
+# setMethod(
+#   "Summary" ##
+#   ## 
+#   , signature(x= ".__IPvr__.")
+#   , function(x, ..., na.rm = FALSE){
+#     ##
+#     stop("Summary IPvr : unimplemented method ", .Generic, " for classes ", class(x) )
+#   }
+# )
+##
+# `Summary..__IPvr__.` <- function(...){
+#     stop("Summary IPvr : unimplemented method ", .Generic, " for classes ", class( as.list(...)[[1]]) )
+#   }
+
 ##
 ##
 ##
@@ -197,11 +256,13 @@ setGeneric("ip.order", function(x,...){
     standardGeneric("ip.order")
 })
 ##
+## 
 ##
-##
-if( !isGeneric("match") ){
-  ## ,package="base"
+if( 
+  !isGeneric("match") 
+){
   setGeneric("match")
+  setGenericImplicit("match")
 }
 ##
 ##
@@ -215,6 +276,46 @@ setGeneric("ip.match", function(x,table,...){
 setGeneric("ip.index", function(table,...){
     standardGeneric("ip.index")
 })
+##________________________________________________________________________________________________________________________
+
+##________________________________________________________________________________________________________________________
+##
+##
+##
+##________________________________________________________________________________________________________________________
+##
+##
+##
+setMethod(
+  "anyNA"
+  ## 
+  , signature(x = ".__ipvr__." )
+  ##
+  , function(x){
+    length(x@.Data)!=length(
+      slot(x, ip.slotname(class(x)))
+    )
+  }
+)
+## TODO: IP, IPr
+# callGeneric(x@ipv4) && callGeneric(x@ipv6)
+##
+## TODO
+##
+##
+# setMethod(
+#   "dropNA"
+#   , "IPv4"
+#   , function(x){
+#     if(
+#       length(x@.Data)==length(x@ipv4)
+#     ){
+#       x[!is.na(x@.Data)]
+#     }else{
+#       x
+#     }
+#   }
+# )
 ##________________________________________________________________________________________________________________________
 
 ##________________________________________________________________________________________________________________________
@@ -393,6 +494,18 @@ IP_uniq <- function(x,...){
 }
 ##________________________________________________________________________________________________________________________
 ##
+## cf. setequals, setdiff,…
+##
+## ¿ TODO: add as.numeric ?
+##
+setMethod(
+  "as.vector"
+  , ".__IPvr__."
+  , function(x, mode = "any"){
+    if( mode %in% c("any", "character") ) as.character(x) else stop("cannot coerce to ", mode, " vector")
+  }
+)
+##________________________________________________________________________________________________________________________
 ##
 ##
 ##
@@ -456,59 +569,6 @@ seq.IPv6r <- seq.IPv4r <- function(x,...){
 }
 ##________________________________________________________________________________________________________________________
 
-##________________________________________________________________________________________________________________________
-##
-##
-##
-##
-##
-##
-# setMethod(
-#   "ip.index"
-#   ## 
-#   , signature(table = ".__IPvr__.")
-#   ##
-#   , function(table,...){
-#     ##
-#     f <- function(x,nomatch=NA_integer_,...){
-#       ##
-#       if( (kl <-class(x))=='IPv6' )
-#         .Call(
-#           ##
-#           'Rip_bsearch_ipv6_in_ipv6r_0'
-#           , x
-#           , table
-#           , idx
-#           , nomatch
-#         )+1
-#       else if( kl=='IPv6r' )
-#         .Call(
-#           ##
-#           'Rip_bsearch_ipv6r_in_ipv6r_0'
-#           , x
-#           , table
-#           , idx
-#           , nomatch
-#         )+1
-#       else stop('bsearch not unimplemented for object of class', kl )
-#     }
-#     ##
-#     idx <- order( 
-#       ##ipv6(table)[['lo']]  
-#       with( 
-#         ipv6(table), lo + ( hi - lo ) %>>%1L
-#       )
-#     ) - 1L
-#     ##
-#     tb.clname <- if( (kl <-class(table))=='IPv4r' ) "v4r"
-#       else if( kl=='IPv6r' ) "v6r"
-#       else stop('bsearch not unimplemented for object of class', kl )
-#     ##
-#     return(
-#       f
-#     )
-#   }
-# )
 ##________________________________________________________________________________________________________________________
 ##
 ##
@@ -600,4 +660,103 @@ setMethod(
     )
   }
 )
+##________________________________________________________________________________________________________________________
+
+##________________________________________________________________________________________________________________________
+##
+##
+##
+getIdx <- function(m){
+  ##
+  midx <- attr(m, "midx") 
+  ## 
+  ptr  <- attr(m, "ptr")
+  ##
+  if( (!is.null(midx)) | (!is.null(ptr)) ) list(midx=midx,ptr=ptr) else stop('missing index')
+}
+##
+##
+##
+##
+# setMethod(
+#   "ip.index"
+#   ## 
+#   , signature(table = ".__IPvr__.")
+#   ##
+#   , function(table,...){
+#     ##
+#     f <- function(x,nomatch=NA_integer_,...){
+#       ##
+#       if( (kl <-class(x))=='IPv6' )
+#         .Call(
+#           ##
+#           'Rip_bsearch_ipv6_in_ipv6r_0'
+#           , x
+#           , table
+#           , idx
+#           , nomatch
+#         )+1
+#       else if( kl=='IPv6r' )
+#         .Call(
+#           ##
+#           'Rip_bsearch_ipv6r_in_ipv6r_0'
+#           , x
+#           , table
+#           , idx
+#           , nomatch
+#         )+1
+#       else stop('bsearch not unimplemented for object of class', kl )
+#     }
+#     ##
+#     idx <- order( 
+#       ##ipv6(table)[['lo']]  
+#       with( 
+#         ipv6(table), lo + ( hi - lo ) %>>%1L
+#       )
+#     ) - 1L
+#     ##
+#     tb.clname <- if( (kl <-class(table))=='IPv4r' ) "v4r"
+#       else if( kl=='IPv6r' ) "v6r"
+#       else stop('bsearch not unimplemented for object of class', kl )
+#     ##
+#     return(
+#       f
+#     )
+#   }
+# )
+##________________________________________________________________________________________________________________________
+##
+## getDLLRegisteredRoutines()
+##
+# IP_order <- function(
+#   x, na.last = TRUE, decreasing = FALSE
+#   , method = c(
+#     "qsort", "radix", "order" ##, "qsort1", "shellsort"
+#   )
+# ){
+#   ##
+#   fcall_fmt <- c(radix = "Rip_%s_radix_2", qsort = "Rip_%s_qsort_cpv_2")
+#   ##
+#   method <- match.arg(method)
+#   ##
+#   if( method== "order" ) return( order(x, na.last = na.last, decreasing = decreasing) )
+#   ##
+#   klnm <-  tolower(class(x))
+#   ##
+#   fnm <- fcall_fmt[match(method, names(fcall_fmt))]
+#   ##
+#   cat("method:", method, " fnm:", fnm, "\n", sep="")
+##  fcall <- match(method, names(fcall_fmt))
+#   ##    
+#   .Call(
+#     ##
+#     sprintf(
+#        fnm
+#       , klnm
+#     )
+#     , x
+#     , decreasing ## 
+#     , na.last
+#   )
+# }
 ##________________________________________________________________________________________________________________________

@@ -149,7 +149,7 @@
 \alias{names<-.IPv6}
 \alias{names<-.IP}
 %%
-%% 
+%% TODO: mv to Conversion
 %%
 \alias{as.data.frame-method}
 %%

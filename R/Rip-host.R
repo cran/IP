@@ -4,9 +4,9 @@
 ##
 ##____________________________________________________________________________________________________________
 ##
-## TODO as.host(ip4,ip6) as.host(ip)
+## TODO: as.host(ip4,ip6) as.host(ip)
 ##
-## TODO: idn
+## 
 ##
 setMethod(
   "initialize"
@@ -208,6 +208,7 @@ setMethod(
   "ip"
   , signature(e1="host",e2="missing")
   , function(e1,...){
+# cat("ip:host\n")
     ##ip(list(ipv4=ipv4(e1),ipv6=ipv6(e1)),append=T)
     ##
     ip(ipv4(e1),ipv6(e1),append=T)
@@ -228,7 +229,9 @@ hostbyIPv4 <- function(host){
     host.name <- .Call("Rip_ipv4_gethostbyaddr_0", ip )
     ##
     host.name <- host.name[match(host, ip)]
-    ##!is.null
+    ##
+    ## TODO: names(host.name) <- if( length(host@id) ) host@id else as.character(host)
+    ##
     if( length(host@id) ) names( host.name ) <- host@id
     ## 
     host.name
@@ -347,9 +350,7 @@ setMethod(
 localhost.ip <- function(...){
   ##
   ip <- .Call('Rip_ifaddrs_0')
-  ##
-#   print(str(ip))
-  ## print
+  ## 
   ip@.Data = (ifelse(
     !is.na(ip@ipv4)
     , 4L
@@ -363,40 +364,56 @@ localhost.ip <- function(...){
 ##_____________________________________________________________________________________________________________
 ##
 ## 
+## variables are set at startup if libidn is available
 ##
+IDNA_DEFAULT <- IDNA_ALLOW_UNASSIGNED <- IDNA_USE_STD3_ASCII_RULES <- NA_integer_
 ##
+## TODO: remplacer par IP_IDN
+##
+IdnaFlags <- NULL
 ##
 ## 
 ##
 match.IdnaFlags <- function(flags){
-
-    IdnaFlags <- c(IDNA_DEFAULT, IDNA_ALLOW_UNASSIGNED, IDNA_USE_STD3_ASCII_RULES)
-    names(IdnaFlags) <- c("IDNA_DEFAULT", "IDNA_ALLOW_UNASSIGNED", "IDNA_USE_STD3_ASCII_RULES")
-    i <- match( flags, names(IdnaFlags))
-    if( any( na <- is.na(i) ) ) stop("unknown flag :", flags[na] ) else IdnaFlags[i]
-
+# print(flags)
+# print(IdnaFlags)
+  if( !IP_IDN ) stop("Idna support not available")
+  ##
+  i <- match( flags, names(IdnaFlags))
+  ##
+  if( any( na <- is.na(i) ) ) stop("unknown Idna flag :", flags[na] ) else if( any( na <- is.na(rv <- IdnaFlags[i]) ) ) stop("undefined Idna values", rv[na] ) else rv
 }
 ##
 ##
 ##
 toIdna <- function(domain, flags="IDNA_DEFAULT"){
-
-    flags <- match.IdnaFlags(flags)
-    ## TODO: bitwAnd
-    rv <- .Call("Rip_idn_idna_encode_0", domain, flags)
-    names(rv) <- domain
-    rv
-
+  ##
+  nv <- length(domain)
+  nf <- length(flags)
+  ##
+  flags <- match.IdnaFlags(flags)
+  ## TODO: bitwAnd
+  rv <- .Call("Rip_idn_idna_encode_0", domain, flags)
+  ##
+  names(rv) <- if( nf > nv ) rep(domain, nf%/%nv ) else domain 
+  ##
+  rv
 }
 ##
 ##
 ##
 fromIdna <- function(domain, flags="IDNA_DEFAULT"){
-
-    flags <- match.IdnaFlags(flags)
-    ## TODO: bitwAnd
-    .Call("Rip_idn_idna_decode_0", domain, flags)
-
+  ##
+  nv <- length(domain)
+  nf <- length(flags)
+  ##
+  flags <- match.IdnaFlags(flags)
+  ## TODO: bitwAnd
+  rv <- .Call("Rip_idn_idna_decode_0", domain, flags)
+  ##
+  names(rv) <- if( nf > nv ) rep(domain, nf%/%nv ) else domain 
+  ##
+  rv
 }
 ##_____________________________________________________________________________________________________________
 
@@ -409,91 +426,99 @@ fromIdna <- function(domain, flags="IDNA_DEFAULT"){
 ##
 ##
 ##
-##
-whois <- function(domain, referer=NA, output=1,verbose=0){
+whois <- function(domain, refer=NA, output=1,verbose=0){
   ##
-  whois.query <- function(domain,referer){
+  whoisQuery <- function(domain, refer){
     ##
-    domain <-as.character(domain) ##  domain ## 
-    ##
-    if(verbose>0) cat('whois:', domain, (referer),"\n")
-    ##
-    resp0 <- ""
-    ##
-    if( is.na(referer) ){
+    tryCatch({
       ##
-      co <- socketConnection(
-        host="whois.iana.org", port = 43, blocking=TRUE, server=FALSE, open="r+"
-      )
+      domain <-as.character(domain) ##  domain ## 
       ##
-      ## catch
+      if(verbose>0) cat('whois:', domain, (refer),"\n")
       ##
-      writeLines(domain, co)
-      # while( resp <- readLines(co) ) print(resp)
-      resp0 <- readLines(co)
+      resp0 <- ""
       ##
-      close(co)
-      ##
-      if(verbose>2) cat("resp:", resp0, "\n")
-      ##
-      referer <- (stringi::stri_match(resp0, regex="(refer|whois):\\s*(.+?)$"))[grep("refer|whois", resp0, value=F),3] 
-    }
-    ##
-    if( all(is.na(referer)) ){
-      ## TLD : tolower(domain)!=tolower(resp0["domain"])
-      kv <- stringi::stri_match(resp0 , regex="^([A-Za-z\\s]+)\\s*:\\s+(.+)$")
-      ##print(kv)
-      ##
-      i <- which(tolower(kv[,2])=="domain")
-      ##
-      if( length(i)==0 ){
-        warning("missing domain field in whois.iana.org response:\n", resp0)
-        return( NA ) 
+      if( is.na(refer) ){
+        ##
+        ianaCo <- socketConnection(
+          host="whois.iana.org", port = 43, blocking=TRUE, server=FALSE, open="r+"
+        )
+        ##
+        on.exit(close(ianaCo))
+        ##
+        writeLines(
+          c( domain, '\r\n')
+          , ianaCo
+          , sep =""
+        )
+        ##
+        resp0 <- readLines(ianaCo)
+        ##
+        if(verbose>2){
+          cat("resp:", resp0, "\n")
+        }
+        ##
+        refer <- stringi::stri_match(resp0, regex="(refer|whois):\\W*([\\w\\.\\-]+)")
+        ##
+        refer <- refer[refer[,2] %in% c("refer", "whois"), 3]
+        ##
+      }
+      ## queries do not necessarily returns a refer, cf. 'org'
+      if( all(is.na(refer)) ){
+        ##
+        if(verbose>1) cat("no refer found", "\n")
+        ##
+        resp1 <- resp0
+      } 
+      else{
+        ##
+        if(verbose>1) cat("refer:'", refer, "'\n")
+        ##
+        refer <- refer[
+          which( !is.na(refer) )[1]
+        ]      
+        ##
+        if(verbose>0) cat("refer:'", refer, "'\n", sep='')
+        ##
+        co <- socketConnection(
+          host=refer, port = 43, blocking=TRUE, server=FALSE, open="r+"
+        )
+        ##
+        on.exit(close(co))
+        ##  
+        qr <- if( refer=='whois.arin.net') c("n + ", domain, '\r\n') else if(refer=='whois.ripe.net') c('-V Md5.2 ', domain, '\r\n') else c( domain, '\r\n') ##
+        ##
+        if(verbose>1) cat("query:'", qr, "'\n")
+        ##
+        writeLines(
+          qr
+          , co
+          , sep =""
+        )
+        ##
+        resp1 <- readLines(co)
       }
       ##
-      if( any(tolower(kv[i,3])!=tolower(domain)) ){
-        warning("no referer found : ", domain)
-        return( NA ) 
-      }
+      if(!output) return(resp1)
       ##
-      resp1 <- resp0
-    } 
-    else{
+      ## ¡¡¡ multibyte string !!!
       ##
-      if(verbose>1) cat("referer:", referer, "\n")
+      ## rm comments
+      resp1 <- resp1[!grepl("^#", resp1)]
+      ## key-val
+      kv <- stringi::stri_match(resp1[nchar(resp1)>0] , regex="^([A-Za-z\\s]+)\\s*:\\s+(.+)$")
+      ## no keys
+      res <- ifelse( is.na(kv[,3]), kv[,1], kv[,3])
       ##
-      referer <- referer[
-        which( !is.na(referer) )[1]
-      ]
+      names(res) <- kv[,2]
       ##
-      co <- socketConnection(
-        host=referer, port = 43, blocking=TRUE, server=FALSE, open="r+"
-      )
-      ##
-      writeLines(domain, co)
-      # while( resp <- readLines(co) ) print(resp)
-      resp1 <- readLines(co)
-      ##
-      close(co)
+      res[!is.na(res)]
     }
-    ##
-    if(!output) return(resp1)
-    ##
-    ##
-    ## rm comments
-    resp1 <- resp1[!grepl("^#", resp1)]
-    ## key-val
-    kv <- stringi::stri_match(resp1[nchar(resp1)>0] , regex="^([A-Za-z\\s]+)\\s*:\\s+(.+)$")
-    ## no keys
-    res <- ifelse( is.na(kv[,3]), kv[,1], kv[,3])
-    ##
-    names(res) <- kv[,2]
-    ##
-    res[!is.na(res)]
+    , error = function(e){
+      e
+    })
   }
-  ## 
-  ## 
   ##
-  mapply(whois.query, as.character(domain), as.character(referer), SIMPLIFY = F)
+  mapply(whoisQuery, as.character(domain), as.character(refer), SIMPLIFY = F)
 }
 ##_____________________________________________________________________________________________________________

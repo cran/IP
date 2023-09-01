@@ -12,28 +12,37 @@
 #include <ctype.h>
  
 #include <strings.h>
- 
-#include <immintrin.h>
 
  
 #if defined (__unix__) || (defined (__APPLE__)  )
- 
-#include <sys/socket.h>  
- 
-#include <arpa/inet.h>   
+   
+  #include <sys/socket.h>  
+   
+  #include <arpa/inet.h>   
 #elif defined(_WIN32)
-#include <winsock2.h>
- 
- 
+  #include <winsock2.h>
+   
+   
 #else 
 #error "unsupported platform"
 #endif
 
  
 #ifdef __MINGW32__
-#define ffs __builtin_ffs
+  #define ffs __builtin_ffs
 #endif
 
+#ifdef __RIP_AVX2__
+  #ifdef __AVX2__
+    #include <emmintrin.h>  
+    #include <immintrin.h>
+  #else 
+    #pragma message("AVX2 support does not seem to be available")
+    #undef __RIP_AVX2__
+  #endif
+#endif
+ 
+ 
 #include <R.h>
  
 #ifdef ENABLE_NLS
@@ -161,7 +170,31 @@ int ipv6r_raw_output(IPv6r *ipr, char *str, int slen);
  
 void RIP_ipv4_Rprintf_0(IPv4 ipv4);
  
+void RIP_ipv4r_Rprintf_0(void* ip);
+ 
 void RIP_ipv6_Rprintf_0(void* ipv6);
+ 
+void RIP_ipv6r_Rprintf_0(void* ipv6r);
+
+ 
+#define Ripaddr_print(___x__) _Generic((___x__), \
+                                        IPv4  : RIP_ipv4_Rprintf_0 \
+                                        IPv6r : RIP_ipv6r_Rprintf_0 \
+                                      )(___x__)
+ 
+#ifdef __RIP_AVX2__
+   
+  void Ripaddr_mm256i_i32_Rprintf_0(__m256i v);
+   
+  void Ripaddr_mm256i_i64_Rprintf_0(__m256i v);
+  void RIP_mm256i_i64_Rprintf_0(__m256i v);
+   
+  void Rippaddr_ipv4x8_Rprintf_0(__m256i v);
+   
+  void Rippaddr_ipv4rx8_Rprintf_0(__m256i vlo, __m256i vhi);
+   
+  void Rippaddr_ipv6x4_Rprintf_0(__m256i vlo, __m256i vhi);
+#endif
 
 int 
   Ripaddr_ipv4_cmp_eq(
@@ -197,6 +230,130 @@ int
 int 
   Ripaddr_ipv6_cmp_ge(
   uint64_t *ip1, uint64_t *ip2
+);
+ 
+ 
+#ifdef __RIP_AVX2__
+ 
+ 
+__m256i 
+  Rippaddr_i32x4_csum_0(
+  __m256i x
+);
+ 
+__mmask8
+  _mm256_i32x8_cmp_eq_mask(
+    __m256i x, __m256i y
+);
+ 
+__mmask8
+  _mm256_u32x8_cmp_lt_mask(
+    __m256i x, __m256i y
+);
+ 
+__mmask8
+  _mm256_u32x8_cmp_gt_mask(
+    __m256i x, __m256i y
+);
+ 
+__mmask8
+  _mm256_u32x8_cmp_le_mask(
+    __m256i x, __m256i y
+);
+ 
+__mmask8
+  _mm256_u32x8_cmp_ge_mask(
+    __m256i x, __m256i y
+);
+ 
+ 
+__mmask8
+  _mm256_i64x4_cmp_eq_mask(
+    __m256i x, __m256i y
+);
+__mmask8
+  _mm256_u64x4_cmp_lt_mask(
+    __m256i x, __m256i y
+);
+__mmask8
+  _mm256_u64x4_cmp_gt_mask(
+    __m256i x, __m256i y
+);
+ 
+ 
+__mmask8
+  Ripaddr_ipv4rx8_cmp_gt_mask0(
+    __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
+);
+ 
+__mmask8
+  Ripaddr_ipv4rx8_cmp_lt_mask0(
+    __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
+);
+ 
+ 
+__mmask8
+  Ripaddr_ipv6x4_cmp_lt_mask0(
+    __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
+);
+ 
+__mmask8
+  Ripaddr_ipv6x4_cmp_gt_mask0(
+    __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
+);
+ 
+__m256i
+  Ripaddr_ipv6_cmp_simd_lt(
+    __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
+);
+__m256i
+  Ripaddr_ipv6_cmp_simd_gt(
+    __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
+);
+ 
+#define Ripaddr_ipv6_cmp_avx2_lt  Ripaddr_ipv6_cmp_simd_lt
+#define Ripaddr_ipv6_cmp_avx2_gt  Ripaddr_ipv6_cmp_simd_gt
+ 
+ 
+__mmask8
+  Ripaddr_ipv6rx4_cmp_lt_mask0(
+      __m256i vip1_lo_lo, __m256i vip1_lo_hi
+    , __m256i vip1_hi_lo, __m256i vip1_hi_hi
+    , __m256i vip2_lo_lo, __m256i vip2_lo_hi
+    , __m256i vip2_hi_lo, __m256i vip2_hi_hi
+);
+ 
+__mmask8
+  Ripaddr_ipv6rx4_cmp_gt_mask0(
+      __m256i vip1_lo_lo, __m256i vip1_lo_hi
+    , __m256i vip1_hi_lo, __m256i vip1_hi_hi
+    , __m256i vip2_lo_lo, __m256i vip2_lo_hi
+    , __m256i vip2_hi_lo, __m256i vip2_hi_hi
+);
+ 
+ 
+#endif  
+ 
+ 
+int 
+  Ripaddr_ipv4r_cmp_lt(
+  IPv4 *ip1, IPv4 *ip2
+);
+ 
+int 
+  Ripaddr_ipv4r_cmp_gt(
+  IPv4 *ip1, IPv4 *ip2
+);
+ 
+ 
+int 
+  Ripaddr_ipv6r_cmp_lt(
+    IPv6r *ip1, IPv6r *ip2
+);
+ 
+int 
+  Ripaddr_ipv6r_cmp_gt(
+    IPv6r *ip1, IPv6r *ip2
 );
  
  

@@ -35,7 +35,7 @@ SEXP Rip_bsearch_ip##___IPv__##_##___opname__##_ip##___IPv_Tb__##_0( \
     while ( lo <= hi ){ \
       int mid = lo + ( hi - lo )/2; \
    \
-      RIP##___IPv_Tb__##_ELT_PTR_DCL(RipTb, idx_ptr[mid] ) \
+      RIP##___IPv_Tb__##_ELT_PTR_DCL(RipTb, idx_ptr[mid] )   \
   \
       if( \
         ___cmp1__(Rip_ip_elt_ptr, RipTb_ip_elt_ptr ) \
@@ -302,6 +302,524 @@ int Rippaddr_ipv6_cmp_ipv6r(uint64_t* ip6, IPv6r *ip6r){
  
 RIP_IPr_BSEARCH_1(v6, v6r, Rippaddr_ipv6_cmp_ipv6r, in, 1 )
 
+#ifdef __RIP_AVX2__
+
+#define ___IP_VAL_SLOTS_GET   RIPv4_SLOTS_GET
+#define ___IP_VAL_ELT_PTR_DCL RIPv4_ELT_PTR_DCL
+#define ___IP_TBL_SLOTS_GET   RIPv4r_SLOTS_GET
+
+#define ___IP_AVX_DIV( ___x__, ___y__ ) \
+  _mm256_cvttps_epi32( _mm256_div_ps( _mm256_cvtepi32_ps(___x__), _mm256_cvtepi32_ps(___y__) ) )
+  
+ 
+union Um256i32 {
+    __m256i v;
+    int i[8];
+};
+ 
+ 
+SEXP Rip_bsearch_ipv4_in_ipv4r_avx2_0( 
+    SEXP Rip
+  , SEXP RipTbl 
+  , SEXP Ridx 
+  , SEXP Romatch 
+){
+ 
+#define ___IP_BSEARCH_AVX2_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_AVX2_BODY__
+}
+ 
+ 
+#undef ___IP_VAL_SLOTS_GET
+#undef ___IP_VAL_ELT_PTR_DCL
+#undef ___IP_TBL_SLOTS_GET
+ 
+ 
+#endif  
+
+#define ___IP_VERSION__      v4r
+#define ___IP_VERSION_NUM__  41
+ 
+#define ___IP_IP_TYP__       IPv4
+#define ___IP_IP_CTYP__       IPv4
+#define ___IP_INTVTREE_CTYP__ IPv4r_bsearch_intvTree
+ 
+ 
+typedef struct IPv4r_bsearch_intvTree {
+ 
+#define ___IP_BSEARCH_INTV_STRUCT_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_STRUCT_BODY__
+} IPv4r_bsearch_intvTree;
+ 
+ 
+#define ___IP_INDEX_VISIT_FN__ Rippaddr_bsearch_intvTree_ipv4r_index_visit_0  
+ 
+#define ___IP_GET__(___ip__, ___tbl__, ___i__) \
+  ___ip__ = ___tbl__[ ___i__]
+ 
+#define ___IP_IPr_SLOTS_GET   RIPv4r_SLOTS_GET
+ 
+#define ___IP_LT__(___ip1__, ___ip2__) \
+  ___ip1__ < ___ip2__
+ 
+#define ___IP_GT__(___ip1__, ___ip2__) \
+  ___ip1__ > ___ip2__
+ 
+ 
+#if 1
+ 
+void
+  ___IP_INDEX_VISIT_FN__(
+      IPv4r_bsearch_intvTree *tree
+    , int                     lo
+    , int                     hi
+    , int                     ipIntv_idx[2]  
+){
+ 
+#define ___IP_BSEARCH_INTV_INDEX_VISIT_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_INDEX_VISIT_BODY__
+}
+#endif  
+ 
+ 
+#if 1
+ 
+SEXP
+  Rip_bsearch_intvTree_ipv4r_index_0(
+      SEXP RipTbl
+    , SEXP Ridx
+){
+ 
+#define ___IP_BSEARCH_INTV_INDEX_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_INDEX_BODY__
+}
+#endif  
+ 
+ 
+#undef ___IP_INDEX_VISIT_FN__ 
+ 
+#undef ___IP_IPr_SLOTS_GET 
+ 
+ 
+#define ___IP_MATCH_VISIT_FN__ Rippaddr_bsearch_intvTree_ipv4r_ipv4_in_visit_0  
+ 
+#define ___IP_IPr_GET__ RIPv4r_ELT_PTR_DCL
+ 
+#define ___IP_GET_LO( ___x__ ) ___x__
+#define ___IP_GET_HI( ___x__ ) ___x__
+ 
+int Rippaddr_ipv4_in_ipv4r(IPv4 ip4, IPv4 *ip4r);
+ 
+#define ___IP_MATCH_FN__ Rippaddr_ipv4_in_ipv4r
+ 
+ 
+#if 1
+ 
+int
+  ___IP_MATCH_VISIT_FN__(  
+      IPv4            x
+    , int             lo
+    , int             hi
+    , IPv4r_bsearch_intvTree *tree
+){
+ 
+#define ___IP_BSEARCH_INTV_MATCH_VISIT_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_MATCH_VISIT_BODY__
+}
+#endif  
+ 
+ 
+#define ___IP_VAL_SLOTS_GET RIPv4_SLOTS_GET
+#define ___IP_TBL_SLOTS_GET RIPv4r_SLOTS_GET
+#define ___IP_VAL_ELT_PTR_DCL RIPv4_ELT_PTR_DCL
+ 
+#define ___IP_INTVTREE_REALLOC Rippaddr_bearch_intvTree_ipv4r_realloc_0
+ 
+___RIP_inline
+void
+  Rippaddr_bearch_intvTree_ipv4r_realloc_0(
+    IPv4r_bsearch_intvTree *tree
+){
+  if( (*tree->nmatch_acc)==tree->nmatch){
+#ifdef BSEARCH_INTV_DBG
+Rprintf("%*s  realloc\n", tree->depth, "");
+#endif
+     
+    int n = (int) ceil( ( (double) tree->nmatch )*1.6);
+     
+    if( ( tree->match_ptr = (int *) realloc(tree->match_ptr, n * sizeof(int)) )==NULL){
+       
+      error("match_ptr realloc", "");
+    }
+Rprintf("realloc: %d %d\n", tree->nmatch, n);
+    tree->nmatch = n;
+  }
+  return ;
+}
+ 
+#if 1
+ 
+SEXP
+  Rip_bsearch_intvTree_ipv4_in_ipv4r_0(
+      SEXP Rip
+    , SEXP RipTbl
+    , SEXP Ridx
+    , SEXP Rminmx
+    , SEXP Rnomatch
+){
+ 
+#define ___IP_BSEARCH_INTV_MATCH_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_MATCH_BODY__
+  
+}
+#endif
+ 
+ 
+#if 1
+ 
+#undef ___IP_GET_LO
+#undef ___IP_GET_HI
+#undef ___IP_MATCH_VISIT_FN__
+#undef ___IP_MATCH_FN__
+ 
+ 
+#define ___IP_GET_LO(___x__) \
+  ___x__[0]
+#define ___IP_GET_HI(___x__) \
+  ___x__[1]
+ 
+#define ___IP_MATCH_VISIT_FN__ Rippaddr_bsearch_intvTree_ipv4r_overlap_ipv4r_visit_0  
+ 
+___RIP_inline
+int Rippaddr_ipv4r_overlap_ipv4r(IPv4* ip4r1, IPv4 *ip4r2);
+ 
+#define ___IP_MATCH_FN__ Rippaddr_ipv4r_overlap_ipv4r
+ 
+#if 1
+ 
+int
+  ___IP_MATCH_VISIT_FN__(  
+      IPv4                   *x
+    , int                     lo
+    , int                     hi
+    , IPv4r_bsearch_intvTree *tree
+){
+ 
+#define ___IP_BSEARCH_INTV_MATCH_VISIT_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_MATCH_VISIT_BODY__
+}
+#endif  
+ 
+ 
+#undef ___IP_VAL_SLOTS_GET
+#undef ___IP_VAL_ELT_PTR_DCL
+ 
+#define ___IP_VAL_SLOTS_GET   RIPv4r_SLOTS_GET
+#define ___IP_VAL_ELT_PTR_DCL RIPv4r_ELT_PTR_DCL
+ 
+SEXP
+  Rip_bsearch_intvTree_ipv4r_overlap_ipv4r_0(
+      SEXP Rip
+    , SEXP RipTbl
+    , SEXP Ridx
+    , SEXP Rminmx
+    , SEXP Rnomatch
+){
+ 
+#define ___IP_BSEARCH_INTV_MATCH_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_MATCH_BODY__
+  
+}
+ 
+ 
+#endif  
+ 
+ 
+#undef ___IP_MATCH_VISIT_FN__
+#undef ___IP_IPr_GET__ 
+#undef ___IP_GET_LO 
+#undef ___IP_GET_HI
+#undef ___IP_MATCH_FN__ 
+ 
+#undef ___IP_VAL_SLOTS_GET
+#undef ___IP_TBL_SLOTS_GET
+#undef ___IP_VAL_ELT_PTR_DCL
+#undef ___IP_INTVTREE_REALLOC
+ 
+ 
+#undef ___IP_VERSION__ 
+#undef ___IP_VERSION_NUM__ 
+ 
+#undef ___IP_IP_TYP__ 
+#undef ___IP_IP_CTYP__ 
+#undef ___IP_INTVTREE_CTYP__ 
+#undef ___IP_GET__ 
+#undef ___IP_LT__  
+#undef ___IP_GT__  
+
+#define ___IP_VERSION__      v6r
+#define ___IP_VERSION_NUM__  61
+ 
+#define ___IP_IP_TYP__        IPv6
+#define ___IP_IP_CTYP__       uint64_t
+#define ___IP_INTVTREE_CTYP__ IPv6r_bsearch_intvTree
+ 
+ 
+typedef struct IPv6r_bsearch_intvTree {
+ 
+#define ___IP_BSEARCH_INTV_STRUCT_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_STRUCT_BODY__
+} IPv6r_bsearch_intvTree;
+ 
+ 
+#define ___IP_INDEX_VISIT_FN__ Rippaddr_bsearch_intvTree_ipv6r_index_visit_0  
+ 
+#define ___IP_GET__(___ip__, ___tbl__, ___i__) \
+  ___ip__.ipv6[0] = ___tbl__[ ___i__ ];   \
+  ___ip__.ipv6[1] = ___tbl__[ ___i__ + ___tbl__##_ip_len ];  ; 
+ 
+#define ___IP_IPr_SLOTS_GET   RIPv6r_SLOTS_GET
+ 
+#define ___IP_LT__(___ip1__, ___ip2__) \
+  Ripaddr_ipv6_cmp_lt( (uint64_t*) &___ip1__, (uint64_t*) &___ip2__)
+ 
+#define ___IP_GT__(___ip1__, ___ip2__) \
+  Ripaddr_ipv6_cmp_gt( (uint64_t*) &___ip1__, (uint64_t*) &___ip2__)
+
+#if 1
+ 
+void
+  ___IP_INDEX_VISIT_FN__(
+      IPv6r_bsearch_intvTree *tree
+    , int                     lo
+    , int                     hi
+    , int                     *ipIntv_idx  
+){
+ 
+#define ___IP_BSEARCH_INTV_INDEX_VISIT_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_INDEX_VISIT_BODY__
+}
+#endif  
+ 
+ 
+#if 1
+ 
+SEXP
+  Rip_bsearch_intvTree_ipv6r_index_0(
+      SEXP RipTbl
+    , SEXP Ridx
+){
+ 
+#define ___IP_BSEARCH_INTV_INDEX_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_INDEX_BODY__
+}
+#endif  
+ 
+ 
+#undef ___IP_INDEX_VISIT_FN__ 
+ 
+#undef ___IP_IPr_SLOTS_GET 
+ 
+ 
+#define ___IP_MATCH_VISIT_FN__ Rippaddr_bsearch_intvTree_ipv6r_ipv6_in_visit_0  
+ 
+#define ___IP_IPr_GET__ RIPv6r_ELT_PTR_DCL
+ 
+#define ___IP_GET_LO( ___x__ ) ___x__
+#define ___IP_GET_HI( ___x__ ) ___x__
+
+ 
+#undef ___IP_LT__
+#undef ___IP_GT__
+ 
+#define ___IP_LT__(___ip1__, ___ip2__) \
+  Ripaddr_ipv6_cmp_lt( ___ip1__, (uint64_t*) &___ip2__)
+ 
+#define ___IP_GT__(___ip1__, ___ip2__) \
+  Ripaddr_ipv6_cmp_gt( ___ip1__, (uint64_t*) &___ip2__)
+ 
+#define ___IP_MATCH_FN__(___ip__, ___ipr__) \
+  Rippaddr_ipv6_in_ipv6r( ___ip__, ___ipr__)
+ 
+#if 1
+ 
+int
+  ___IP_MATCH_VISIT_FN__(  
+      uint64_t       *x
+    , int             lo
+    , int             hi
+    , IPv6r_bsearch_intvTree *tree
+){
+ 
+#define ___IP_BSEARCH_INTV_MATCH_VISIT_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_MATCH_VISIT_BODY__
+}
+#endif  
+ 
+ 
+#define ___IP_VAL_SLOTS_GET   RIPv6_SLOTS_GET
+#define ___IP_TBL_SLOTS_GET   RIPv6r_SLOTS_GET
+#define ___IP_VAL_ELT_PTR_DCL RIPv6_ELT_PTR_DCL
+ 
+#define ___IP_INTVTREE_REALLOC Rippaddr_bearch_intvTree_ipv6r_realloc_0
+ 
+___RIP_inline
+void
+  Rippaddr_bearch_intvTree_ipv6r_realloc_0(
+    IPv6r_bsearch_intvTree *tree
+){
+  Rippaddr_bearch_intvTree_ipv4r_realloc_0( (IPv4r_bsearch_intvTree*) tree);
+}
+
+#if 1
+ 
+SEXP
+  Rip_bsearch_intvTree_ipv6_in_ipv6r_0(
+      SEXP Rip
+    , SEXP RipTbl
+    , SEXP Ridx
+    , SEXP Rminmx
+    , SEXP Rnomatch
+){
+ 
+#define ___IP_BSEARCH_INTV_MATCH_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_MATCH_BODY__
+  
+}
+#endif
+ 
+ 
+#if 1
+ 
+#undef ___IP_GET_LO
+#undef ___IP_GET_HI
+#undef ___IP_MATCH_VISIT_FN__
+#undef ___IP_MATCH_FN__
+ 
+ 
+___RIP_inline
+int Rippaddr_ipv6r_overlap_ipv6r(IPv6r* ip6r1, IPv6r *ip6r2){
+   
+  return ( 
+       Ripaddr_ipv6_cmp_le( ip6r1->lo.ipv6, ip6r2->hi.ipv6 )  
+    && Ripaddr_ipv6_cmp_ge( ip6r1->hi.ipv6, ip6r2->lo.ipv6 )  
+  );
+}
+ 
+#define ___IP_GET_LO( ___x__ ) ( (uint64_t*) &( ___x__->lo ) )
+#define ___IP_GET_HI(___x__ ) ( (uint64_t*) &( ___x__->hi ) )
+ 
+#define ___IP_MATCH_VISIT_FN__ Rippaddr_bsearch_intvTree_ipv6r_overlap_ipv6r_visit_0  
+ 
+#define ___IP_MATCH_FN__ Rippaddr_ipv6r_overlap_ipv6r
+ 
+#if 1
+ 
+int
+  ___IP_MATCH_VISIT_FN__(  
+      IPv6r       *x
+    , int             lo
+    , int             hi
+    , IPv6r_bsearch_intvTree *tree
+){
+ 
+#define ___IP_BSEARCH_INTV_MATCH_VISIT_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_MATCH_VISIT_BODY__
+}
+#endif  
+ 
+ 
+#undef ___IP_VAL_SLOTS_GET
+#undef ___IP_VAL_ELT_PTR_DCL
+ 
+#define ___IP_VAL_SLOTS_GET   RIPv6r_SLOTS_GET
+#define ___IP_VAL_ELT_PTR_DCL RIPv6r_ELT_PTR_DCL
+ 
+SEXP
+  Rip_bsearch_intvTree_ipv6r_overlap_ipv6r_0(
+      SEXP Rip
+    , SEXP RipTbl
+    , SEXP Ridx
+    , SEXP Rminmx
+    , SEXP Rnomatch
+){
+ 
+#define ___IP_BSEARCH_INTV_MATCH_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_INTV_MATCH_BODY__
+  
+}
+ 
+ 
+#endif  
+ 
+ 
+#undef ___IP_MATCH_VISIT_FN__
+#undef ___IP_IPr_GET__ 
+#undef ___IP_GET_LO 
+#undef ___IP_GET_HI
+#undef ___IP_MATCH_FN__ 
+ 
+#undef ___IP_VAL_SLOTS_GET
+#undef ___IP_TBL_SLOTS_GET
+#undef ___IP_VAL_ELT_PTR_DCL
+#undef ___IP_INTVTREE_REALLOC
+ 
+ 
+#undef ___IP_VERSION__ 
+#undef ___IP_VERSION_NUM__ 
+ 
+#undef ___IP_IP_TYP__ 
+#undef ___IP_IP_CTYP__ 
+#undef ___IP_INTVTREE_CTYP__ 
+#undef ___IP_GET__ 
+#undef ___IP_LT__  
+#undef ___IP_GT__  
+
 typedef struct IPv4r_intvTree {
      
     int   nip;
@@ -336,13 +854,10 @@ void
      
     , int            ipIntv_idx[2]
 ){
- 
 #ifdef BSEARCH_INTV_DBG
  
-tree->depth++;  
-Rprintf("%*s %p lo:%d hi:%d\n", tree->depth, "",  tree, lo , hi);
 #endif
-   
+
   IPv4 *tbl_ip_lo_ptr, *tbl_ip_hi_ptr, cmin, cmx;
   int  *tbl_ip_idxptr;
    
@@ -358,19 +873,19 @@ Rprintf("%*s %p lo:%d hi:%d\n", tree->depth, "",  tree, lo , hi);
   mid = lo + ( hi - lo )/2;
    
 #ifdef BSEARCH_INTV_DBG
-Rprintf("%*s mid:%d \n", tree->depth, "",  mid); 
-Rprintf("%*s left\n", tree->depth, "");  
 #endif
+ 
    
   if( (hi1 = mid -1 )>lo ){
+ 
      
     ipv4r_bearch_intv_index_0_visit0(tree, lo   , hi1, lipIntv_idx);
      
  
   }else{
 #ifdef BSEARCH_INTV_DBG
-Rprintf("%*s lleaf %d\n", tree->depth, "",  tree->depth);
 #endif
+ 
      
     lipIntv_idx[0] = lo ;
     lipIntv_idx[1] = lo ;
@@ -384,15 +899,15 @@ Rprintf("%*s lleaf %d\n", tree->depth, "",  tree->depth);
 
   if( (lo1 = mid + 1 )<hi ){
 #ifdef BSEARCH_INTV_DBG
-Rprintf("%*s right %d %d\n", tree->depth, "", lo1, hi);  
-#endif
+Rprintf("%*s right %d %d\n", tree->depth, "", lo1, hi); 
+#endif 
    
   ipv4r_bearch_intv_index_0_visit0(tree,lo1, hi   , ripIntv_idx);
    
  
   }else{
 #ifdef BSEARCH_INTV_DBG
-Rprintf("%*s rleaf %d\n", tree->depth, "",  tree->depth);
+Rprintf("%*s rleaf %d\n", tree->depth, "",  hi);
 #endif
      
     ripIntv_idx[0] = hi ;
@@ -416,13 +931,16 @@ Rprintf("%*s ", tree->depth, "");RIP_ipv4_Rprintf_0(lmx);Rprintf("\n%*s ", tree-
   if(
     lmx > rmx
   ){
-#ifdef BSEARCH_INTV_DBG
-Rprintf("%*s swap\n", tree->depth, "");    
+#ifdef BSEARCH_INTV_DBG 
+Rprintf("%*s swap ", tree->depth, "");  
+RIP_ipv4_Rprintf_0(lmx);Rprintf(" ");RIP_ipv4_Rprintf_0(rmx);Rprintf("\n"); 
 #endif
     ipIntv_idx[1] = lipIntv_idx[1];
     cmx = lmx;
   }
   else{
+ 
+ 
     ipIntv_idx[1] = ripIntv_idx[1];
     cmx = rmx;
   }
@@ -433,18 +951,24 @@ Rprintf("%*s swap\n", tree->depth, "");
    
   IPv4 nmin = tbl_ip_lo_ptr[ tbl_ip_idxptr[ mid ]];
   IPv4 nmx  = tbl_ip_hi_ptr[ tbl_ip_idxptr[ mid ]];
+  
 #ifdef BSEARCH_INTV_DBG
 Rprintf("%*s ", tree->depth, "");RIP_ipv4_Rprintf_0(cmx);Rprintf("\n%*s ", tree->depth, "");RIP_ipv4_Rprintf_0(nmx);Rprintf("\n");
+Rprintf("%*s min: ", tree->depth, ""); 
+RIP_ipv4_Rprintf_0(cmin);Rprintf(" ");RIP_ipv4_Rprintf_0(nmin);Rprintf("\n");
 #endif
+
    
   if(
     cmin > nmin
   ){
+ 
     ipIntv_idx[0] = mid;
   }
   if(
     cmx <  nmx
   ){
+ 
     ipIntv_idx[1] = mid;
   }
 #ifdef BSEARCH_INTV_DBG
@@ -454,11 +978,13 @@ Rprintf("%*s ", tree->depth, "");RIP_ipv4_Rprintf_0(tbl_ip_hi_ptr[ tbl_ip_idxptr
    
   tree->minmx_ptr[ mid  ]            = ipIntv_idx[0];
   tree->minmx_ptr[ mid + tree->nip ] = ipIntv_idx[1];
+  
 #ifdef BSEARCH_INTV_DBG
-Rprintf("%*s exit %d (%d %d)\n", tree->depth, "", mid, lo, hi);
+Rprintf("%*s exit %d (%d %d) ", tree->depth, "", mid, lo, hi);
+RIP_ipv4_Rprintf_0( tbl_ip_lo_ptr[tbl_ip_idxptr[tree->minmx_ptr[ mid ] ]] );Rprintf(" ");RIP_ipv4_Rprintf_0( tbl_ip_hi_ptr[tbl_ip_idxptr[tree->minmx_ptr[ mid + tree->nip ] ]] );Rprintf("\n");
 tree->depth--;
 #endif
- 
+
    
   return ;
 }
@@ -494,9 +1020,9 @@ SEXP
   tree.minmx_ptr = minmx_ptr;
   RipTbl_ip_idxptr+=0;  
 #ifdef BSEARCH_INTV_DBG
-tree.depth=-1;
 Rprintf("nip:%d %d %p\n", RipTbl_nip, tree.nip, &tree);
 #endif  
+tree.depth=-1;
 
   ipv4r_bearch_intv_index_0_visit0(
       &tree, 
@@ -1027,6 +1553,7 @@ Rprintf("acc:%d\n", *tree.nmatch_acc);
  
   midx_ptr = memcpy( midx_ptr , tree.match_ptr, *tree.nmatch_acc * sizeof(int) );  
  
+  free(tree.match_ptr); 
    
   SEXP Res = duplicate(Rip);
    
@@ -1060,6 +1587,7 @@ int DBLhash2(int key){
  
 int
   Rip_cache_ipv4_init_0_0(
+    void
 ){
    
   RIP_cache_ipv4_nval  = RIP_CACHE_NVAL;
@@ -1100,6 +1628,7 @@ Rprintf("nval:%d shift:%d\n", RIP_cache_ipv4_nval, RIP_cache_ipv4_htb_shift);
  
 SEXP
   Rip_cache_ipv4_Rsummary_0_0(
+    void
 ){
    
   SEXP Rsummary = PROTECT( allocVector(INTSXP, 4 ) );
@@ -2039,7 +2568,7 @@ SEXP Rip_h_ip##___IPv__##_##___hfn__##_lookup_0_0(SEXP ___Rip__, SEXP ___RipTbl_
   int nprotected=0; \
   \
   RIP##___IPv__##_SLOTS_GET( ___RipTbl__ ) \
-  ___RipTbl__##_nip+=0; \
+  ___RipTbl__##_nip+=0; ___RipTbl__##_ip_lo_ptr+=0;___RipTbl__##_ip_hi_ptr+=0; \
    \
   Rhtb   = getAttrib( RIP##___IPv__##_IP_RipTbl(___RipTbl__), install("htb")); \
   RIP_##___hfn__##_LOOKUP_INIT(hip, htb_sz, Rhtb) \
@@ -2089,7 +2618,7 @@ SEXP
   int nprotected=0;
    
   RIPv4r_SLOTS_GET( RipTbl )
-  RipTbl_nip+=0;
+  RipTbl_nip+=0;RipTbl_ip_hi_ptr+=0;
   Rhtb   = getAttrib( RipTbl_ipr, install("htb"));
   RIP_h64dblh_lemire_LOOKUP_INIT(hip, htb_sz, Rhtb)
 

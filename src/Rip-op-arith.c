@@ -557,8 +557,7 @@ int
   res[0] = ipv6[0] - subtrahend[0] - ( res[1] > ipv6[1] ); 
    
   if(
-      
-     Ripaddr_ipv6_cmp_lt(ipv6, res)
+     Ripaddr_ipv6_cmp_lt(ipv6, res)  
   ){
     return 0;
   }
@@ -566,6 +565,295 @@ int
 }
  
 RIP_OP2_ARITH_IP(v6, subv6, Rippaddr_ipv6_sub_ipv6)
+
+#if defined(__RIP_AVX2__)
+
+___RIP_inline
+  __m256i Rippaddr_i32x8_csum_z0(
+  __m256i x
+){
+    __m256i t0, t1;
+     
+    t0 = _mm256_castps_si256( _mm256_permute_ps(
+      _mm256_castsi256_ps(x)
+      , _MM_SHUFFLE(2, 1, 0, 3)
+    ));
+    t1 =  _mm256_permute2f128_si256(  
+      t0, t0
+      , 41
+    );
+    x = _mm256_add_epi32(  
+      x
+      , _mm256_blend_epi32(  
+        t0, t1, 0x11
+      )
+    );
+
+    t0 = _mm256_castps_si256( _mm256_permute_ps(
+      _mm256_castsi256_ps(x)
+      , _MM_SHUFFLE(1, 0, 3, 2)
+    ));
+    t1 =  _mm256_permute2f128_si256(  
+      t0, t0
+      , 41
+    );
+    x = _mm256_add_epi32(  
+      x
+      , _mm256_blend_epi32(  
+        t0, t1, 0x33
+      )
+    );
+     
+     
+    x = _mm256_add_epi32(
+      x
+      , _mm256_permute2f128_si256(x, x, 41)
+    );
+     
+    return x;
+}
+ 
+___RIP_inline
+  __m256i Rippaddr_i32x4_csum_0(
+  __m256i x
+){
+   
+  __m256i a0;
+
+  a0 = _mm256_castps_si256( _mm256_permute_ps(
+      _mm256_castsi256_ps(x)
+      , _MM_SHUFFLE(2, 3, 0, 1)  
+    ));
+
+  x = _mm256_blend_epi32(
+      x
+    , _mm256_add_epi32(x, a0 )
+    , 0xaa  
+  );
+
+  a0 =_mm256_add_epi32(
+      x
+     
+    , _mm256_castps_si256( _mm256_permute_ps(
+      _mm256_castsi256_ps(x)
+      , _MM_SHUFFLE(1, 1, 0, 0)  
+    ))
+  );
+
+  x = _mm256_blend_epi32(
+      x
+    , a0
+    , 0xcc  
+  );
+
+  a0 = _mm256_add_epi32(
+      x
+    , _mm256_castps_si256( _mm256_permute_ps(
+      _mm256_castsi256_ps(
+        _mm256_permute2x128_si256(x, x, _MM_SHUFFLE(0, 0, 0, 0) )
+      )
+      , _MM_SHUFFLE(3, 3, 3, 3)  
+    ))
+  );
+   
+  x = _mm256_blend_epi32(
+      x
+    , a0
+    , 0xf0  
+  );
+
+  return x;
+}
+
+SEXP
+  Rcsum_test0(SEXP Rx){
+  SEXP Res;
+  int step = 16, i=0;
+  int n = LENGTH(Rx) ;
+  PROTECT( Res = allocVector(INTSXP, n) );
+  __m256i acc = _mm256_setzero_si256();
+  for(; i < (n-(n%step) ); i+=step ){
+     
+    __m256i x = _mm256_loadu_si256( (__m256i *) &INTEGER(Rx)[i]);
+    x = Rippaddr_i32x4_csum_0(x);
+    x = _mm256_add_epi32(x, acc);
+    _mm256_storeu_si256( (__m256i *) &INTEGER(Res)[i], x);
+    __m256i a0 = _mm256_permute2f128_si256(x, x, 0x11);
+    acc = _mm256_castps_si256( _mm256_permute_ps(_mm256_castsi256_ps(a0), 0xff) );
+     
+    __m256i x1 = _mm256_loadu_si256( (__m256i *) &INTEGER(Rx)[i+8]);
+    x1 = Rippaddr_i32x4_csum_0(x1);
+    x1 = _mm256_add_epi32(x1, acc);
+    _mm256_storeu_si256( (__m256i *) &INTEGER(Res)[i+8], x1);
+    __m256i a1 = _mm256_permute2f128_si256(x1, x1, 0x11);
+    acc = _mm256_castps_si256( _mm256_permute_ps(_mm256_castsi256_ps(a1), 0xff) );
+  }
+  int acc1 =  _mm256_extract_epi32(acc, 0);
+  for (; i<n; i++) {
+    acc1 += INTEGER(Rx)[i];
+    INTEGER(Res)[i] = acc1;
+  }
+  UNPROTECT(1);
+  return Res;
+}
+
+___RIP_inline
+int
+  Rippaddr_ipv6x4_add_ipv6x4(
+      __m256i vip1_lo, __m256i vip1_hi
+    , __m256i vadd_lo, __m256i vadd_hi  
+    , __m256i *vres_lo, __m256i *vres_hi
+){
+   
+ *vres_lo = _mm256_add_epi64( vip1_lo, vadd_lo); 
+   
+ *vres_hi = _mm256_add_epi64( vip1_hi, vadd_hi); 
+   
+  __mmask8 res_lo_lt = ~_mm256_u64x4_cmp_gt_mask(*vres_lo, vip1_lo)
+    & ~_mm256_i64x4_cmp_eq_mask(*vres_lo, vip1_lo)
+  ;
+   
+  const unsigned long long selmask = 0x1000100010001;  
+   
+  const __m256i rsh = _mm256_set_epi64x(
+    48L, 32L, 16L, 0L
+  );
+   
+ *vres_hi = _mm256_add_epi64(
+      *vres_hi
+    , _mm256_and_si256(
+      _mm256_srlv_epi64( 
+        _mm256_set1_epi64x( _pdep_u64(res_lo_lt, selmask) )
+        , rsh
+      ) 
+      , _mm256_set1_epi64x(1L) 
+    )
+  );
+
+#if 1
+   
+  int hi_gt = _mm256_u64x4_cmp_gt_mask( *vres_hi, vip1_hi );
+   
+  int hi_eq = _mm256_movemask_pd(
+    _mm256_castsi256_pd( _mm256_cmpeq_epi64( *vres_hi, vip1_hi ) )
+  );
+  return
+    hi_gt | ( hi_eq & res_lo_lt )
+  ;
+#else
+   
+  return  
+    Ripaddr_ipv6x4_cmp_gt_mask0(
+       *vres_lo, *vres_hi
+      , vip1_lo, vip1_hi
+    ) 
+  ;
+#endif
+
+}
+ 
+ 
+___RIP_inline
+int
+  Rippaddr_ipv6x4_sub_ipv6x4(
+      __m256i vip1_lo, __m256i vip1_hi
+    , __m256i vsub_lo, __m256i vsub_hi  
+    , __m256i *vres_lo, __m256i *vres_hi
+){
+   
+ *vres_lo = _mm256_sub_epi64( vip1_lo, vsub_lo); 
+   
+ *vres_hi = _mm256_sub_epi64( vip1_hi, vsub_hi); 
+   
+  __mmask8 res_lo_gt = _mm256_u64x4_cmp_gt_mask(*vres_lo, vip1_lo);
+   
+  const unsigned long long selmask = 0x1000100010001;  
+   
+  const __m256i rsh = _mm256_set_epi64x(
+    48L, 32L, 16L, 0L
+  );
+   
+ *vres_hi = _mm256_sub_epi64(
+      *vres_hi
+    , _mm256_and_si256(
+      _mm256_srlv_epi64( 
+        _mm256_set1_epi64x( _pdep_u64(res_lo_gt, selmask) )
+        , rsh
+      ) 
+      , _mm256_set1_epi64x(1L) 
+    )
+  );
+   
+  return  
+    Ripaddr_ipv6x4_cmp_gt_mask0(
+      vip1_lo, vip1_hi
+      , *vres_lo, *vres_hi
+    ) 
+  ;
+}
+
+#if 1  
+ 
+#define ___IP_VERSION__      v6
+#define ___IP_VERSION_NUM__  60
+ 
+ 
+#define ___SIMD_Fn__(___x__, ___y__, ___res__) \
+  Rippaddr_ipv6x4_add_ipv6x4( \
+      ___x__##_vlo , ___x__##_vhi \
+    , ___y__##_vlo , ___y__##_vhi \
+    , ___res__##_vlo , ___res__##_vhi \
+  )
+
+ 
+#define ___SCALAR_Fn__     Rippaddr_ipv6_add_ipv6
+ 
+SEXP Rip_ipv6_op2_arith_addv6_2( 
+    SEXP Rip1, SEXP Rip2 
+){ 
+ 
+#define ___IP_OP2_ARITH_BODY__
+   
+  #include "templates/Rip-iter-template.c"
+ 
+#undef ___IP_OP2_ARITH_BODY__
+}
+ 
+#undef ___SIMD_Fn__   
+#undef ___SCALAR_Fn__ 
+ 
+ 
+#define ___SIMD_Fn__(___x__, ___y__, ___res__) \
+  Rippaddr_ipv6x4_sub_ipv6x4( \
+      ___x__##_vlo , ___x__##_vhi \
+    , ___y__##_vlo , ___y__##_vhi \
+    , ___res__##_vlo , ___res__##_vhi \
+  )
+
+ 
+#define ___SCALAR_Fn__     Rippaddr_ipv6_sub_ipv6
+ 
+SEXP Rip_ipv6_op2_arith_subv6_2( 
+    SEXP Rip1, SEXP Rip2 
+){ 
+ 
+#define ___IP_OP2_ARITH_BODY__
+   
+  #include "templates/Rip-iter-template.c"
+ 
+#undef ___IP_OP2_ARITH_BODY__
+}
+ 
+#undef ___SIMD_Fn__   
+#undef ___SCALAR_Fn__ 
+ 
+ 
+#undef ___IP_VERSION__   
+#undef ___IP_VERSION_NUM__  
+ 
+#endif  
+
+#endif  
 
 ___RIP_inline
 int

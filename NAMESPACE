@@ -24,12 +24,16 @@ importFrom(
 ##
 ##
 export(
-  ##"names", "names<-",
+  ##
+  "ip.capabilities",
+  ##
+  ## "names", "names<-",
   ##
   "names.IPv4"  , "names.IPv4r",
   "names<-.IPv4", "names<-.IPv4r",
   "names.IPv6"  , "names.IPv6r",
   "names<-.IPv6", "names<-.IPv6r",
+  "names.host", 
   ## 
   "names.IP" , "names.IPr", 
   "names.IPr", "names<-.IPr",
@@ -88,6 +92,8 @@ export(
   ##
 #   , '%>>%'
 #   , '%<<%'
+  ##
+  , 'getIdx'
   ##, 'host'
   , 'localhost.ip'
   ##
@@ -150,6 +156,7 @@ exportMethods(
     ## Summary
     ##
     "is.na",
+    "anyNA",
     "is.numeric",
     ##
     "coerce",
@@ -188,6 +195,7 @@ S3method(names, IPv6)
 S3method(names, IPv6r)
 S3method(names, IP)
 S3method(names, IPr)
+S3method(names, host)
 ##
 S3method('names<-', IPv4)
 S3method('names<-', IPv4r)
@@ -202,7 +210,7 @@ S3method(format, IPv4)
 S3method(toString, IPv4)
 ## range.IPv4
 ## min max
-## seq.IPv4r
+## 
 ## 
 S3method(format, IPv4r)
 S3method(toString, IPv4r)
@@ -250,6 +258,11 @@ S3method(rep, IPv6)
 S3method(rep, IPv6r)
 S3method(rep, IP)
 S3method(rep, IPr)
+##
+##
+##
+S3method(seq, IPv4r)
+S3method(seq, IPv6r)
 ##
 ##
 ##
