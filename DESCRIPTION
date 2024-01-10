@@ -1,7 +1,7 @@
 Package: IP
 Type: Package
 Title: Classes and Methods for 'IP' Addresses
-Version: 0.1.1
+Version: 0.1.2
 Authors@R: 
     person(
     given = "Thomas"
@@ -19,6 +19,6 @@ Imports: stringi
 Suggests: knitr
 VignetteBuilder: knitr
 Encoding: UTF-8
-Packaged: 2023-09-01 09:31:59 UTC; dilleo
+Packaged: 2024-01-10 18:43:19 UTC; dilleo
 Repository: CRAN
-Date/Publication: 2023-09-01 11:00:09 UTC
+Date/Publication: 2024-01-10 19:03:02 UTC

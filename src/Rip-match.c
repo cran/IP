@@ -1,5 +1,4 @@
-
-
+ 
  
 #include "Rip.h"
 
@@ -304,9 +303,19 @@ RIP_IPr_BSEARCH_1(v6, v6r, Rippaddr_ipv6_cmp_ipv6r, in, 1 )
 
 #ifdef __RIP_AVX2__
 
+#define ___IP_VERSION__      v4
+#define ___IP_VERSION_NUM__  40
+ 
 #define ___IP_VAL_SLOTS_GET   RIPv4_SLOTS_GET
 #define ___IP_VAL_ELT_PTR_DCL RIPv4_ELT_PTR_DCL
+ 
 #define ___IP_TBL_SLOTS_GET   RIPv4r_SLOTS_GET
+
+#define ___IP_SCALAR_IN( ___x__, ___y__) \
+  Rippaddr_ipv4_in_ipv4r( ___x__, ___y__)
+ 
+#define ___IP_SCALAR_GT( ___x__, ___y__) \
+  Ripaddr_bsearch_ipv4_cmp_gt( ___x__, ___y__)
 
 #define ___IP_AVX_DIV( ___x__, ___y__ ) \
   _mm256_cvttps_epi32( _mm256_div_ps( _mm256_cvtepi32_ps(___x__), _mm256_cvtepi32_ps(___y__) ) )
@@ -316,6 +325,21 @@ union Um256i32 {
     __m256i v;
     int i[8];
 };
+ 
+ 
+SEXP Rip_bsearch_ipv4_in_ipv4r_2( 
+    SEXP Rip
+  , SEXP RipTbl 
+  , SEXP Ridx 
+  , SEXP Romatch 
+){
+ 
+#define ___IP_BSEARCH_BODY__ 1
+   
+  #include "templates/Rip-bsearch-template.c"
+ 
+#undef ___IP_BSEARCH_BODY__
+}
  
  
 SEXP Rip_bsearch_ipv4_in_ipv4r_avx2_0( 
@@ -333,9 +357,15 @@ SEXP Rip_bsearch_ipv4_in_ipv4r_avx2_0(
 }
  
  
+#undef ___IP_VERSION__
+#undef ___IP_VERSION_NUM__
+ 
 #undef ___IP_VAL_SLOTS_GET
 #undef ___IP_VAL_ELT_PTR_DCL
 #undef ___IP_TBL_SLOTS_GET
+ 
+#undef ___IP_SCALAR_IN
+#undef ___IP_SCALAR_GT
  
  
 #endif  
@@ -415,7 +445,12 @@ SEXP
  
 #define ___IP_MATCH_VISIT_FN__ Rippaddr_bsearch_intvTree_ipv4r_ipv4_in_visit_0  
  
-#define ___IP_IPr_GET__ RIPv4r_ELT_PTR_DCL
+#define ___IP_IPr_GET__(___vname__, ___i__ ) \
+  IPv4   ___vname__##_ip_elt[2]; \
+  ___vname__##_ip_elt[0] = ___vname__##_ip_lo_ptr[ ___i__ ]; \
+  ___vname__##_ip_elt[1] = ___vname__##_ip_hi_ptr[ ___i__ ]; \
+  IPv4  *___vname__##_ip_elt_ptr = (IPv4 *) &___vname__##_ip_elt; 
+  
  
 #define ___IP_GET_LO( ___x__ ) ___x__
 #define ___IP_GET_HI( ___x__ ) ___x__
@@ -464,7 +499,7 @@ Rprintf("%*s  realloc\n", tree->depth, "");
      
     if( ( tree->match_ptr = (int *) realloc(tree->match_ptr, n * sizeof(int)) )==NULL){
        
-      error("match_ptr realloc", "");
+      error("match_ptr realloc");
     }
 Rprintf("realloc: %d %d\n", tree->nmatch, n);
     tree->nmatch = n;
@@ -656,7 +691,13 @@ SEXP
  
 #define ___IP_MATCH_VISIT_FN__ Rippaddr_bsearch_intvTree_ipv6r_ipv6_in_visit_0  
  
-#define ___IP_IPr_GET__ RIPv6r_ELT_PTR_DCL
+#define ___IP_IPr_GET__(___vname__, ___i__ ) \
+  IPv6r   ___vname__##_ip_elt; \
+  ___vname__##_ip_elt.lo.ipv6[0] = ___vname__##_ip_lo_ptr[ ___i__ ]; \
+  ___vname__##_ip_elt.lo.ipv6[1] = ___vname__##_ip_lo_ptr[ ___i__ + ___vname__##_ip_len ]; \
+  ___vname__##_ip_elt.hi.ipv6[0] = ___vname__##_ip_hi_ptr[ ___i__ ]; \
+  ___vname__##_ip_elt.hi.ipv6[1] = ___vname__##_ip_hi_ptr[ ___i__ + ___vname__##_ip_len ]; \
+  IPv6r  *___vname__##_ip_elt_ptr = (IPv6r *) &___vname__##_ip_elt; 
  
 #define ___IP_GET_LO( ___x__ ) ___x__
 #define ___IP_GET_HI( ___x__ ) ___x__
@@ -1122,7 +1163,8 @@ Rprintf("%*s  realloc\n", tree->depth, "");
       int n = (int) ceil( ( (double) tree->nmatch )*1.6);
        
       if( ( tree->match_ptr = (int *) realloc(tree->match_ptr, n * sizeof(int)) )==NULL){
-        error("realloc", tree->depth, "");
+         
+        error("realloc");
       }
 Rprintf("realloc: %d %d\n", tree->nmatch, n);
       tree->nmatch = n;
@@ -1170,7 +1212,8 @@ Rprintf("%*s  realloc\n", tree->depth, "");
     int n = (int) ceil( ( (double) tree->nmatch )*1.6);
      
     if( ( tree->match_ptr = (int *) realloc(tree->match_ptr, n * sizeof(int)) )==NULL){
-      error("realloc", tree->depth, "");
+       
+      error("realloc");
     }
 Rprintf("realloc: %d %d\n", tree->nmatch, n);
     tree->nmatch = n;
@@ -1404,7 +1447,8 @@ Rprintf("%*s  realloc\n", tree->depth, "");
       int n = (int) ceil( ( (double) tree->nmatch )*1.6);
        
       if( ( tree->match_ptr = (int *) realloc(tree->match_ptr, n * sizeof(int)) )==NULL){
-        error("realloc", tree->depth, "");
+         
+        error("realloc");
       }
 Rprintf("realloc: %d %d\n", tree->nmatch, n);
       tree->nmatch = n;

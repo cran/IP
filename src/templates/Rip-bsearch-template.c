@@ -1,6 +1,312 @@
 
 
-#if defined( ___IP_BSEARCH_AVX2_BODY__ )
+#if defined( ___IP_BSEARCH_BODY_MATCH__ )
+
+  int mid = lo + ( hi - lo )/2; 
+   
+  RIPv4r_ELT_PTR_DCL(RipTbl, mid ) 
+   
+  if( 
+    ___IP_SCALAR_IN(Rip_ip_elt_ptr, RipTbl_ip_elt_ptr ) 
+  ){ 
+    resptr[i] = idx_ptr[mid]; 
+ 
+#if defined(___IP_AVX2_CTXT__)
+    lo=hi+1;  
+#endif
+ 
+#if defined(___IP_BSEARCH_MATCH_CONTINUE__)
+    continue;
+#else 
+    break; 
+#endif
+  } 
+  if( 
+    ___IP_SCALAR_GT(Rip_ip_elt_ptr, RipTbl_ip_elt_ptr) 
+  ){ 
+    lo = mid+1; 
+  }else{ 
+    hi = mid-1; 
+  } 
+
+#elif defined( ___IP_BSEARCH_BODY_SSE2_MATCH__ )
+
+  __m256 v4n = _mm_set1_ps( (float) n );
+   
+  __m256i v4qidx = _mm256_cvttps_epi32(
+      _mm256_div_ps(_mm256_mul_ps( (v4n), (v4seq)), (v4nqtllm1) )
+    );
+#if __DBG
+Ripaddr_mm256i_i32_Rprintf_0(qidx);Rprintf("\n");
+#endif
+        
+     
+    v4qidx = _mm_add_epi32( v4lo, v4qidx);
+    
+ 
+#if defined( ___IP_BSEARCH_BODY_AVX2x2_MATCH__ )
+    qidxHi = _mm_add_epi32( vlo, qidxHi);
+#endif  
+
+    __m256i v4idx = v4qidx;
+ 
+     
+    __m256i tbl_vlo = _mm_i32gather_epi32( 
+      (int const *)  RipTbl_ip_lo_ptr
+      , v4idx
+      , 4 
+    );
+    __m256i tbl_vhi = _mm_i32gather_epi32( 
+      (int const *)  RipTbl_ip_hi_ptr
+      , v4idx
+      , 4 
+    );
+#if __DBG
+Rippaddr_ipv4rx8_Rprintf_0(tbl_vlo, tbl_vhi);Rprintf("\n");
+#endif
+
+     
+    __mmask8 gt   = _mm256_u32x8_cmp_gt_mask( ip_vip, tbl_vlo );
+     
+    __mmask8 lt   = _mm256_u32x8_cmp_lt_mask( ip_vip, tbl_vhi );
+     
+    __mmask8 eqLo = _mm256_i32x8_cmp_eq_mask( ip_vip, tbl_vlo );
+     
+    __mmask8 eqHi = _mm256_i32x8_cmp_eq_mask( ip_vip, tbl_vhi );
+ 
+     
+    __mmask8 ge = gt | eqLo;
+    __mmask8 le = lt | eqHi;
+#if __DBG
+ Rprintf("ge: %d le: %d\n", ge, le);
+#endif
+
+   
+  if( ( ge==0 ) || ( le==0 ) ) break;
+   
+  __mmask8 eq = eqLo | eqHi;
+
+   
+  if( !eq ){ 
+     
+    int lo0= lo;
+     
+     
+    lo  += ( ( n * ( 31 - __builtin_clz( ge ) ) ) / nqtllm1 )  ;  
+     
+    vlo  = _mm_set1_epi32( 
+      lo
+    );
+     
+    hi = ( lo0 +  ( n * (  __builtin_ctz( le ) ) ) / nqtllm1 ) ;  
+
+  }else{
+#if __DBG
+  Rprintf("m\n");
+#endif
+
+    int midx = lo + ( n * ( __builtin_ffs( eqLo>0 ? eqLo : eqHi ) - 1 ) / nqtllm1 );
+
+#if __DBG
+  Rprintf("midx:%d %d\n", midx, vidx[__builtin_ffs( eqLo>0 ? eqLo : eqHi ) - 1] );
+#endif
+    resptr[i] = idx_ptr[midx];
+     
+    lo=hi+1;
+    break;
+  }  
+
+#elif defined( ___IP_BSEARCH_BODY_AVX2_MATCH__ )
+
+#if defined( ___IP_BSEARCH_BODY_AVX2x2_MATCH__ )
+  const nqtllm1 = 15;
+#else
+  const nqtllm1 = 7;
+#endif  
+  
+   
+  __m256 vn = _mm256_set1_ps( (float) n );
+   
+  __m256i qidx = _mm256_cvttps_epi32(
+      _mm256_div_ps(_mm256_mul_ps( (vn), (vseq)), (vfifteen) )
+    );
+#if __DBG
+Ripaddr_mm256i_i32_Rprintf_0(qidx);Rprintf("\n");
+#endif
+
+ 
+#if defined( ___IP_BSEARCH_BODY_AVX2x2_MATCH__ )
+  __m256i qidxHi = _mm256_cvttps_epi32(
+      _mm256_div_ps(_mm256_mul_ps( (vn), (vseqHi)), (vfifteen) )
+  );
+#if __DBG
+Ripaddr_mm256i_i32_Rprintf_0(qidxHi);Rprintf("\n");
+#endif
+
+#endif  
+        
+     
+    qidx = _mm256_add_epi32( vlo, qidx);
+    
+ 
+#if defined( ___IP_BSEARCH_BODY_AVX2x2_MATCH__ )
+    qidxHi = _mm256_add_epi32( vlo, qidxHi);
+#endif  
+
+    __m256i vidx = qidx;
+ 
+     
+    __m256i tbl_vlo = _mm256_i32gather_epi32( 
+      (int const *)  RipTbl_ip_lo_ptr
+      , vidx
+      , 4 
+    );
+    __m256i tbl_vhi = _mm256_i32gather_epi32( 
+      (int const *)  RipTbl_ip_hi_ptr
+      , vidx
+      , 4 
+    );
+#if __DBG
+Rippaddr_ipv4rx8_Rprintf_0(tbl_vlo, tbl_vhi);Rprintf("\n");
+#endif
+
+ 
+#if defined( ___IP_BSEARCH_BODY_AVX2x2_MATCH__ )
+
+    __m256i vidxHi = qidxHi;
+   
+     
+    __m256i tbl_vloHi = _mm256_i32gather_epi32( 
+      (int const *)  RipTbl_ip_lo_ptr
+      , vidxHi
+      , 4 
+    );
+    __m256i tbl_vhiHi = _mm256_i32gather_epi32( 
+      (int const *)  RipTbl_ip_hi_ptr
+      , vidxHi
+      , 4 
+    );
+#if __DBG
+ Rippaddr_ipv4rx8_Rprintf_0(tbl_vloHi, tbl_vhiHi);Rprintf("\n");
+#endif
+
+#endif  
+
+     
+    __mmask8 gt   = _mm256_u32x8_cmp_gt_mask( ip_vip, tbl_vlo );
+     
+    __mmask8 lt   = _mm256_u32x8_cmp_lt_mask( ip_vip, tbl_vhi );
+     
+    __mmask8 eqLo = _mm256_i32x8_cmp_eq_mask( ip_vip, tbl_vlo );
+     
+    __mmask8 eqHi = _mm256_i32x8_cmp_eq_mask( ip_vip, tbl_vhi );
+    
+ 
+#if defined( ___IP_BSEARCH_BODY_AVX2x2_MATCH__ )
+     
+    __mmask8 gtHi   = _mm256_u32x8_cmp_gt_mask( ip_vip, tbl_vloHi );
+     
+    __mmask8 ltHi   = _mm256_u32x8_cmp_lt_mask( ip_vip, tbl_vhiHi );
+     
+    __mmask8 eqLoHi = _mm256_i32x8_cmp_eq_mask( ip_vip, tbl_vloHi );
+     
+    __mmask8 eqHiHi = _mm256_i32x8_cmp_eq_mask( ip_vip, tbl_vhiHi );
+    
+     
+    gt |= gtHi >> 8 ;
+    lt |= ltHi >> 8 ;
+    eqLo |= eqLoHi >> 8 ;
+    eqHi |= eqHiHi >> 8 ;
+    
+#endif  
+    
+     
+    __mmask8 ge = gt | eqLo;
+    __mmask8 le = lt | eqHi;
+#if __DBG
+ Rprintf("ge: %d le: %d\n", ge, le);
+#endif
+
+   
+  if( ( ge==0 ) || ( le==0 ) ) break;
+   
+  __mmask8 eq = eqLo | eqHi;
+
+   
+  if( !eq ){ 
+     
+    int lo0= lo;
+     
+     
+    lo  += ( ( n * ( 31 - __builtin_clz( ge ) ) ) / nqtllm1 )  ;  
+     
+    vlo  = _mm256_set1_epi32( 
+      lo
+    );
+     
+    hi = ( lo0 +  ( n * (  __builtin_ctz( le ) ) ) / nqtllm1 ) ;  
+
+  }else{
+#if __DBG
+  Rprintf("m\n");
+#endif
+
+    int midx = lo + ( n * ( __builtin_ffs( eqLo>0 ? eqLo : eqHi ) - 1 ) / nqtllm1 );
+
+#if __DBG
+  Rprintf("midx:%d %d\n", midx, vidx[__builtin_ffs( eqLo>0 ? eqLo : eqHi ) - 1] );
+#endif
+    resptr[i] = idx_ptr[midx];
+     
+    lo=hi+1;
+    break;
+  }  
+ 
+ 
+#elif defined( ___IP_BSEARCH_BODY__ )
+ 
+   
+  SEXP Res; 
+  int nprotected=0; 
+   
+  ___IP_VAL_SLOTS_GET( Rip ) 
+   
+  ___IP_TBL_SLOTS_GET( RipTbl ) 
+  RipTbl_nip+=0;
+   
+  int  idx_nip  =  LENGTH(Ridx); 
+  int *idx_ptr  =  INTEGER(Ridx); 
+  int  nomatch  = *INTEGER(Romatch); 
+   
+  PROTECT( Res = allocVector(INTSXP, Rip_nip ) ); 
+  nprotected++; 
+  int *resptr  = INTEGER( Res ); 
+   
+  for( int i=0 ; i<Rip_nip; i++ ){ 
+ 
+     
+    resptr[i]= nomatch;
+     
+    if( (Rip_ip_idxptr[i]!=NA_INTEGER) ){
+      ___IP_VAL_ELT_PTR_DCL( Rip, i)
+       
+      int lo  = 0, hi  = idx_nip-1; 
+       
+      while ( lo <= hi ){ 
+         
+        #define ___IP_BSEARCH_BODY_MATCH__
+        #include "Rip-bsearch-template.c"
+        #undef ___IP_BSEARCH_BODY_MATCH__
+      }  
+    }
+  }  
+  RIP_END 
+  resptr = INTEGER( Res ); 
+  RIP_Rvec_IDSLOT_CP(Res, Rip ) 
+  UNPROTECT(nprotected); 
+  return Res; 
+
+#elif defined( ___IP_BSEARCH_AVX2_BODY__ )
  
 
   SEXP Res; 
@@ -35,10 +341,29 @@ RIP_ipv4_Rprintf_0(Rip_ip_elt_ptr);Rprintf("\n");
       int lo  = 0, hi  = idx_nip-1, n=-1; 
  
  
+#if 1 
+      {
+        #define ___IP_BSEARCH_MATCH_CONTINUE__
+        #define ___IP_BSEARCH_BODY_MATCH__
+        #include "Rip-bsearch-template.c"
+        #undef ___IP_BSEARCH_BODY_MATCH__  
+        #undef ___IP_BSEARCH_MATCH_CONTINUE__     
+      }
 #if 1
+      if( lo <= hi ){
+        #define ___IP_BSEARCH_MATCH_CONTINUE__
+        #define ___IP_BSEARCH_BODY_MATCH__
+        #include "Rip-bsearch-template.c"
+        #undef ___IP_BSEARCH_BODY_MATCH__  
+        #undef ___IP_BSEARCH_MATCH_CONTINUE__    
+      }
+#endif
+
+#elif 1
       {
         int mid = lo + ( hi - lo )/2; 
-        RIPv4r_ELT_PTR_DCL(RipTbl, idx_ptr[mid] )   
+         
+        RIPv4r_ELT_PTR_DCL(RipTbl, mid )
         if( 
           Rippaddr_ipv4_in_ipv4r(Rip_ip_elt_ptr, RipTbl_ip_elt_ptr ) 
         ){ 
@@ -58,7 +383,8 @@ RIP_ipv4_Rprintf_0(Rip_ip_elt_ptr);Rprintf("\n");
       if( lo <= hi ){
  
         int mid = lo + ( hi - lo )/2; 
-        RIPv4r_ELT_PTR_DCL(RipTbl, idx_ptr[mid] )   
+         
+        RIPv4r_ELT_PTR_DCL(RipTbl, mid )
         if( 
           Rippaddr_ipv4_in_ipv4r(Rip_ip_elt_ptr, RipTbl_ip_elt_ptr ) 
         ){ 
@@ -150,7 +476,7 @@ Ripaddr_mm256i_i32_Rprintf_0(qidx);Rprintf("\n");
 Ripaddr_mm256i_i32_Rprintf_0(qidxHi);Rprintf("\n");
 #endif
 
-#else
+#else  
         __m256 vn = _mm256_set1_ps( (float) n );
          
         __m256i qidx = _mm256_cvttps_epi32(
@@ -270,12 +596,13 @@ Rprintf("midx:%d %d\n", midx, vidx[__builtin_ffs( eqLo>0 ? eqLo : eqHi ) - 1] );
           }
         {
           int mid = lo + ( hi - lo )/2; 
-          RIPv4r_ELT_PTR_DCL(RipTbl, idx_ptr[mid] )   
+           
+          RIPv4r_ELT_PTR_DCL(RipTbl, mid ) 
           if( 
             Rippaddr_ipv4_in_ipv4r(Rip_ip_elt_ptr, RipTbl_ip_elt_ptr ) 
           ){ 
             resptr[i] = idx_ptr[mid]; 
-              lo=hi+1;
+            lo=hi+1;
             break; 
           } 
           if( 
@@ -298,7 +625,7 @@ Rprintf("midx:%d %d\n", midx, vidx[__builtin_ffs( eqLo>0 ? eqLo : eqHi ) - 1] );
        
       while( 
 #if __AVX2_STEP      
-        (n = hi - lo) >=  4096/__AVX2_STEP 
+        (n = hi - lo) >=  4096 * __AVX2_STEP 
 #else
         (n = hi - lo) >= 7  
 #endif
@@ -317,10 +644,10 @@ Rprintf("\nlo-hi#AVX#0:%d %d %d\n", lo, hi, n);
             );
            
           qidx = _mm256_add_epi32( vlo, qidx);
+
+          __m256i vidx = qidx;
  
            
-          __m256i vidx = _mm256_i32gather_epi32( (int const *)  idx_ptr, qidx, 4 );
-
           __m256i tbl_vlo = _mm256_i32gather_epi32( 
             (int const *)  RipTbl_ip_lo_ptr
             , vidx
@@ -352,7 +679,7 @@ Rprintf("\nlo-hi#AVX#0:%d %d %d\n", lo, hi, n);
              
             int lo0= lo;
 
-            lo  += ( ( n * ( 31 - __builtin_clz( ge ) ) ) / 7 )  ;  
+            lo  += ( ( n * ( 31 - __builtin_clz( ge ) ) ) / 7 ) ;  
              
             vlo  = _mm256_set1_epi32( 
               lo
@@ -374,6 +701,36 @@ Rprintf("m\n");
             break;
              
           }
+#if 0
+          {
+            #define ___IP_AVX2_CTXT__
+            #define ___IP_BSEARCH_BODY_MATCH__
+            #include "Rip-bsearch-template.c"
+            #undef ___IP_BSEARCH_BODY_MATCH__  
+            #undef ___IP_AVX2_CTXT__     
+          }
+#elif 0        
+        {
+          int mid = lo + ( hi - lo )/2; 
+            
+          RIPv4r_ELT_PTR_DCL(RipTbl, mid ) 
+          if( 
+            Rippaddr_ipv4_in_ipv4r(Rip_ip_elt_ptr, RipTbl_ip_elt_ptr ) 
+          ){ 
+            resptr[i] = idx_ptr[mid]; 
+              lo=hi+1;
+            break; 
+          } 
+          if( 
+            Ripaddr_bsearch_ipv4_cmp_gt(Rip_ip_elt_ptr, RipTbl_ip_elt_ptr) 
+          ){ 
+            lo = mid+1; 
+          }else{ 
+            hi = mid-1; 
+          } 
+          vlo  = _mm256_set1_epi32(lo);
+        } 
+#endif
 
       }  
 
@@ -407,9 +764,9 @@ Ripaddr_mm256i_i32_Rprintf_0(qidxHi);Rprintf("\n");
         qidx = _mm256_add_epi32( vlo, qidx);
         qidxHi = _mm256_add_epi32( vlo, qidxHi);
 
+        __m256i vidx = qidx;
+ 
          
-        __m256i vidx = _mm256_i32gather_epi32( (int const *)  idx_ptr, qidx, 4 );
-
         __m256i tbl_vlo = _mm256_i32gather_epi32( 
           (int const *)  RipTbl_ip_lo_ptr
           , vidx
@@ -424,9 +781,9 @@ Ripaddr_mm256i_i32_Rprintf_0(qidxHi);Rprintf("\n");
 Rippaddr_ipv4rx8_Rprintf_0(tbl_vlo, tbl_vhi);Rprintf("\n");
 #endif
 
+        __m256i vidxHi = qidxHi;
+ 
          
-        __m256i vidxHi = _mm256_i32gather_epi32( (int const *)  idx_ptr, qidxHi, 4 );
-
         __m256i tbl_vloHi = _mm256_i32gather_epi32( 
           (int const *)  RipTbl_ip_lo_ptr
           , vidxHi
@@ -509,7 +866,8 @@ Rprintf("midx:%d %d\n", midx, vidx[__builtin_ffs( eqLo>0 ? eqLo : eqHi ) - 1] );
 #if 0         
         {
           int mid = lo + ( hi - lo )/2; 
-          RIPv4r_ELT_PTR_DCL(RipTbl, idx_ptr[mid] )   
+            
+          RIPv4r_ELT_PTR_DCL(RipTbl, mid ) 
           if( 
             Rippaddr_ipv4_in_ipv4r(Rip_ip_elt_ptr, RipTbl_ip_elt_ptr ) 
           ){ 
@@ -534,13 +892,24 @@ Rprintf("midx:%d %d\n", midx, vidx[__builtin_ffs( eqLo>0 ? eqLo : eqHi ) - 1] );
       
        
       while ( lo <= hi ){
+#if __DBG
+Rprintf("last ");     
+#endif
+ 
+#if 1 
+          {
+            #define ___IP_BSEARCH_BODY_MATCH__
+            #include "Rip-bsearch-template.c"
+            #undef ___IP_BSEARCH_BODY_MATCH__      
+          }
+#elif 0  
  
         int mid = lo + ( hi - lo )/2; 
 #if __DBG
-Rprintf("  %d %d %d %d\n", lo, hi, mid, idx_ptr[mid]);     
 #endif
-        RIPv4r_ELT_PTR_DCL(RipTbl, idx_ptr[mid] )   
+Rprintf("  %d %d %d %d\n", lo, hi, mid, idx_ptr[mid]);     
          
+        RIPv4r_ELT_PTR_DCL(RipTbl, mid )
     
         if( 
           Rippaddr_ipv4_in_ipv4r(Rip_ip_elt_ptr, RipTbl_ip_elt_ptr ) 
@@ -559,6 +928,7 @@ Rprintf("  %d %d %d %d\n", lo, hi, mid, idx_ptr[mid]);
         }else{ 
           hi = mid-1; 
         } 
+#endif
       } 
     }
 
@@ -679,8 +1049,8 @@ Rprintf("  %d %d %d %d\n", lo, hi, mid, idx_ptr[mid]);
 
   ipIntv_idx[0] = lipIntv_idx[0];
 
-  ___IP_GET__( lmx, tbl_hiPtr, ip_idxPtr[ lipIntv_idx[1] ] );  
-  ___IP_GET__( rmx, tbl_hiPtr, ip_idxPtr[ ripIntv_idx[1] ] );  
+  ___IP_GET__( lmx, tbl_hiPtr, lipIntv_idx[1]  );  
+  ___IP_GET__( rmx, tbl_hiPtr, ripIntv_idx[1]  );  
   
 #ifdef BSEARCH_INTV_DBG
 Rprintf("%*s ", tree->depth*2, "");RIP_ipv4_Rprintf_0(lmx);Rprintf("\n%*s ", tree->depth*2, "");RIP_ipv4_Rprintf_0(rmx);Rprintf("\n");  
@@ -702,10 +1072,10 @@ Rprintf("%*s ", tree->depth*2, "");RIP_ipv4_Rprintf_0(lmx);Rprintf("\n%*s ", tre
     cmx = rmx;
   }
 
-  ___IP_GET__( cmin, tbl_loPtr, ip_idxPtr[ ipIntv_idx[0]  ] );  
+  ___IP_GET__( cmin, tbl_loPtr, ipIntv_idx[0] );  
 
-  ___IP_GET__( nmin, tbl_loPtr, ip_idxPtr[ mid ] );  
-  ___IP_GET__( nmx,  tbl_hiPtr, ip_idxPtr[ mid ] );  
+  ___IP_GET__( nmin, tbl_loPtr, mid  );  
+  ___IP_GET__( nmx,  tbl_hiPtr, mid  );  
 #ifdef BSEARCH_INTV_DBG
 Rprintf("%*s ", tree->depth, "");RIP_ipv4_Rprintf_0(cmx);Rprintf("\n%*s ", tree->depth, "");RIP_ipv4_Rprintf_0(nmx);Rprintf("\n");
 #endif
@@ -775,7 +1145,11 @@ tree.depth=-1;
   return Rminmx;
 
 #elif defined( ___IP_BSEARCH_INTV_MATCH_VISIT_BODY__ )
+ 
 
+#pragma message("VISIT BODY")
+
+   
   ___IP_IP_CTYP__ 
     *tbl_ip_lo_ptr, *tbl_ip_hi_ptr  
   ;
@@ -820,17 +1194,18 @@ Rprintf("%*s lo:%d hi:%d mid:%d isleaf:%d\n", tree->depth, "", lo, hi, mid, isle
   tbl_ip_idxptr = tree->ip_idxPtr;
    
   idx = tree->minmx_ptr[ mid ] ;
-   
-  ___IP_GET__( mn, tbl_ip_lo_ptr,  tbl_ip_idxptr[ idx ] );
+
+  ___IP_GET__( mn, tbl_ip_lo_ptr,   idx  );
    
   idx = tree->minmx_ptr[ mid + tree->nip ] ;
 #ifdef BSEARCH_INTV_DBG
 Rprintf("%*s idx:%d\n", tree->depth, "", idx);
 #endif
-   
-  ___IP_GET__( mx, tbl_ip_hi_ptr, tbl_ip_idxptr[ idx ] );
+
+  ___IP_GET__( mx, tbl_ip_hi_ptr,  idx  );
 #ifdef BSEARCH_INTV_DBG
-Rprintf( "%*s tbl-idx:%d\n", tree->depth, "", tbl_ip_idxptr[ idx ]);  
+ 
+Rprintf( "%*s tbl-idx:%d\n", tree->depth, "",  idx );  
  
  
 #endif
@@ -886,7 +1261,7 @@ Rprintf("%*s  realloc\n", tree->depth, "");
        
       if( ( tree->match_ptr = (int *) realloc(tree->match_ptr, n * sizeof(int)) )==NULL){
          
-        Rf_error("matchPtr realloc", "");
+        Rf_error("matchPtr realloc");
       }
 Rprintf("realloc: %d %d\n", tree->nmatch, n);
       tree->nmatch = n;

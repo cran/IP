@@ -36,6 +36,7 @@ void Rip_WSAStartup(void){
     rc = WSAStartup(MAKEWORD(2, 2), &wsaData);
     if (rc != 0) {
       error("WSAStartup failed: %d\n", rc);
+
     }
     Rip_wstart = 1;
   }
@@ -233,8 +234,10 @@ SEXP
    
   free(input_ucs4);
    
-  if(rc != PUNYCODE_SUCCESS)
+  if(rc != PUNYCODE_SUCCESS){
     error("%s for '%s'", punycode_strerror(rc), CHAR(Rinput) );
+
+  }
   output[output_len] = '\0';
    
   Rval = mkChar(reEnc(output, CE_UTF8, getCharCE( Rinput ), 1));
@@ -445,6 +448,7 @@ SEXP Rip_getaddrinfo_0(SEXP Rhostnames ){
   int nipv4, *ipv4_hptr, ipv4_nacc=0
     , nipv6, *ipv6_hptr, ipv6_nacc=0
   ;
+  char errmsg[256];
    
   nhosts = LENGTH( Rhostnames );
    
@@ -508,10 +512,12 @@ Rprintf("LIBIDN\n" );
 #endif
              
             warning("hostname '%s': '%s' (%d)\n", hostname, gai_strerror( rc ), rc);
+            
           break;
           default:
 
-            error( gai_strerror( rc ) );
+            error( "hostname : %s", gai_strerror( rc ) );
+
           break;
         }     
          
@@ -694,6 +700,7 @@ Rprintf("      %" PRIu64 " %" PRIu64 "\n"
 }
 
 SEXP Rip_ifaddrs_0(void){ 
+  char errmsg[256];
  
 #if defined (__unix__) || (defined (__APPLE__)  )
      
@@ -713,6 +720,8 @@ SEXP Rip_ifaddrs_0(void){
     if ( (rc = getifaddrs(&ifAddrStruct) )== -1) {
         
        error("getifaddrs %s",  strerror(rc) );
+        
+        
     }
      
     for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
@@ -839,7 +848,6 @@ SEXP Rip_ifaddrs_0(void){
    
   return Rip;
 #else
-  char errmsg[256];
   sprintf(errmsg, "unavailable '%s' function at line %d in file '%s'.", __func__, __LINE__, __FILE__);
   error(errmsg);
   return ScalarLogical(0);

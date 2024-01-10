@@ -1,5 +1,5 @@
-5d8c53923a5185ddddacdf5ba0ebc05a *DESCRIPTION
-e5602f2375c4ba763afbea9bcd064626 *INSTALL
+c0286350e415c2ebeee6648fb86bdc2b *DESCRIPTION
+73bc0a4e25d71b749772053a963b7d33 *INSTALL
 211372ee06bc903b1da2d7aba422658f *NAMESPACE
 f102f692586c67e40c7b1f0faea9bb4d *R/Rip-AllClass.R
 c2da1c8c9b0750888717d91729e825c2 *R/Rip-AllGenerics.R
@@ -10,7 +10,7 @@ cf022b9c9833a3be10c1dbfa8acdecb8 *R/Rip-host.R
 2f73d418f394b3e2646d77691350bb16 *R/Rip-utils.R
 74d98522a55fe976a7ab1b9993ac6391 *R/sysdata.rda
 ffdd0003e9e3815771a89f6ca01164c7 *README
-8a6b179071d79ad7eabd532a6ac4a9d7 *build/vignette.rds
+3614861d293e4296262f76d9f69b84e6 *build/vignette.rds
 ec8294e5cb22b760bc8600e0cc35ce08 *cleanup
 a84d39ad2f6a822d3caa2854ee6fad99 *configure
 de2f1db13ac9321e7977ff4f52709249 *configure.ac
@@ -31,17 +31,17 @@ bfeb160909db81c097f75b99844a48c9 *man/varia.Rd
 1f950b33b7ebf3c221e10e2bf2f9b3be *src/Makevars.win
 2f384fc60315b2d2b726bac98b5139ea *src/Rip-IP-macros.h
 ee74ffa62b42deb58dd713955e4f8af6 *src/Rip-R-macros.h
-aca5472fbb1a72e52ab2606fa67685e1 *src/Rip-host-info.c
+a94231b7f8c4a136baf2db6115fed72c *src/Rip-host-info.c
 29347f1ae00f080cbc71e0953a6443da *src/Rip-io-internal.c
 2919331ea6c1d43f71520f3b77c16fa3 *src/Rip-itermacros.h
-ce651e4a3756491c03c9fc20b704409d *src/Rip-match.c
+7c183ba360cc8fa81fe6c92d0875661b *src/Rip-match.c
 a0d955311d1e7f9ee7fc7357ee7e1cb0 *src/Rip-op-arith.c
 e2ed1a83999e34ed017c0ce7a41bfefb *src/Rip-op-bool.c
 e52faa7a9c732933f4e2b27055599802 *src/Rip-op-mask.c
 287c09fb7b2ad820ee27f816915e36c0 *src/Rip-register.c
 4a598c3b6ee8d57622d7f958db55772b *src/Rip.c
 274a2ce31659db29771e085c161d52fb *src/Rip.h
-d0d2b648e7e8ff12f6f1bac82f1e0009 *src/templates/Rip-bsearch-template.c
+11823679d10361cb30d20ab2d59c437f *src/templates/Rip-bsearch-template.c
 d37776ed795769902b96b28b067ac733 *src/templates/Rip-common-tables.c
 6f2af32f325651316b0ca96f7305fbbf *src/templates/Rip-iter-template.c
 46980c78484a9fa99d92f143972ec7c9 *src/templates/Rip-register-routine.c
