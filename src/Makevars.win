@@ -1,8 +1,8 @@
 PKG_CFLAGS= \
-	-I../windows/libidn-1.30/include -D__RIP_IDN__
+	-I../windows/libidn/include -D__RIP_IDN__
 
 PKG_LIBS= \
-  -L../windows/libidn-1.30/lib${R_ARCH} -lws2_32 -lidn -lRiconv
+  -L../windows/libidn/lib -lws2_32 -lidn -lintl -liconv
 
 all: clean winlibs
 

@@ -350,7 +350,8 @@ SEXP
 #else
   char errmsg[256];
   sprintf(errmsg, "unavailable '%s' function at line %d in file '%s'.", __func__, __LINE__, __FILE__);
-  error(errmsg);
+   
+  error("%s", errmsg);
   return ScalarLogical(0);
 #endif
 } 
@@ -421,7 +422,8 @@ SEXP Rip_ipv6_gethostbyaddr_0(SEXP Rip ){
 #else
   char errmsg[256];
   sprintf(errmsg, "unavailable '%s' function at line %d in file '%s'.", __func__, __LINE__, __FILE__);
-  error(errmsg);
+   
+  error("%s", errmsg);
   return ScalarLogical(0);
 #endif
 } 
@@ -694,7 +696,8 @@ Rprintf("      %" PRIu64 " %" PRIu64 "\n"
 #else
   char errmsg[256];
   sprintf(errmsg, "unavailable '%s' function at line %d in file '%s'.", __func__, __LINE__, __FILE__);
-  error(errmsg);
+   
+  error("%s", errmsg);
   return R_NilValue;
 #endif
 }
@@ -849,7 +852,8 @@ SEXP Rip_ifaddrs_0(void){
   return Rip;
 #else
   sprintf(errmsg, "unavailable '%s' function at line %d in file '%s'.", __func__, __LINE__, __FILE__);
-  error(errmsg);
+   
+  error("%s", errmsg);
   return ScalarLogical(0);
 #endif
 }

@@ -172,7 +172,10 @@
 
   \code{match()} and \code{ip.match()} behave differently according to their signature. When table is of class IPv4 or IPv6, \code{ip.match()} does a table lookup like base \code{match()}. But when table is an IP range and the x argument is not, both look for the range x lies into. If you want to test whether an IP range lies within another range, use the function returned by the \code{ip.index()} method (see example). 
   
-  When arguments are of the same class, \code{match()} simply call base \code{match()} on the character representation while \code{ip.match()} uses hash tables. Range search uses a binary search tree. Beware that binary search can only handle non overlapping IP* ranges by default. Use \code{ip.index()} with \code{overlap=TRUE} to allow for overlap (only implemented for IPv4 and Ipv4r at the moment). Note that this also allows for multiple matches. As a consequence, result vector might be longer that input vector and therefore needs specialized data structures and access methods inspired by the compressed column storage of sparse matrices. See the example section for testing for overlap and lookup.
+  When arguments are of the same class, \code{match()} simply call base \code{match()} on the character representation while \code{ip.match()} uses hash tables. Range search uses a binary search tree. Beware that binary search can only handle non overlapping IP* ranges by default. Use \code{ip.index()} with \code{overlap=TRUE} to allow for overlap. Note that this also allows for multiple matches. As a consequence, result vector might be longer that input vector and therefore needs specialized data structures and access methods inspired by the compressed column storage of sparse matrices. See the example section for testing for overlap and lookup.
+  
+  \code{ip.index()} returns a function. Calling this function with the value argument set to TRUE returns the matched value and the indices of the matches otherwise. 
+  When both overlap and value are TRUE, the function returns a two--columns \code{data.frame}with x and the matching values in the table.
   
   %% By default, the hash table is dropped after the look up is completed. Use the keep.hash=T argument to keep it so that the addresses need not be re-hashed every time \code{ip.match()} is called on the object.
   
@@ -241,7 +244,7 @@ all(m==ipv4.reserved())
 ## OTH match works as expected
 all(ipv4.reserved()[ip.match(ipv4.reserved(),ipv4.reserved())]==ipv4.reserved())
 ##
-## find overlapping ranges (pure R)
+## Find overlapping IPv4 ranges (pure R)
 ##
 ipr.overlaps <- function(x, y, rm.diag  = FALSE){
   overlaps <- function(x,y) ( lo(x) <= hi(y) ) & ( hi(x) >= lo( y))
@@ -255,7 +258,7 @@ ipr.overlaps <- function(x, y, rm.diag  = FALSE){
 ##
 ipr.overlaps(ipv4.reserved(),rm.diag=TRUE)
 ##
-## find *overlapping* ranges (IP package)
+## Find overlapping IPv4 ranges (IP package)
 ##
 bsearch <- ip.index(ipv4.reserved(), overlap=TRUE)
 ##
@@ -277,5 +280,9 @@ subset(
   )
   , n>1 & x!=tbl
 )
+##
+## Same thing for IPv6r
+##
+ip.index(ipv6.reserved(), overlap=TRUE)(value=TRUE)
 }
 

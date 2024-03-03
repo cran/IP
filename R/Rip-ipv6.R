@@ -1410,50 +1410,96 @@ setMethod(
   ##
   , function(table, overlap=FALSE,...){
     ##
-    f <- function(x,nomatch=NA_integer_,...){
+    bsearch <- function(x=NULL, nomatch=NA_integer_, value=F,...){
       ##
-#       naidx <- is.na(x)
+      if( is.null(x) ) x <- table
       ##
-      midx <- if( (kl <-class(x))=='IPv6' )
-        .Call(
+      ## "polymorphisme"
+      ##
+      tb.clnm <- tolower(class(table))
+      ##
+      x.clnm <- if( ( kl <-class(x)) %in% c('IPv6', 'IPv6r' ) ){
+        tolower(kl)
+      }else stop('bsearch not implemented for object of class ', kl , ' and table ', class(table))
+      ##
+      midx <- .Call(
+          ## "dispatch"
+          sprintf('Rip_bsearch_%s_in_%s_0', x.clnm, tb.clnm)
           ##
-          'Rip_bsearch_ipv6_in_ipv6r_0'
-          , x
+          , x 
           , table
           , idx
           , nomatch
-        )+1
-      else if( kl=='IPv6r' )
-        .Call(
-          ##
-          'Rip_bsearch_ipv6r_in_ipv6r_0'
-          , x
-          , table
-          , idx
-          , nomatch
-        )+1
-      else stop('bsearch not unimplemented for object of class', kl )
+      )+1L
+      ##
+      if( value ) return(table[midx]) ## return(x[midx])## 
       ##
       midx
     }
     ##
-    if(overlap) stop("overlap option not implemented for this class")
-    ## !!! CHK
+    bsearch.overlap <- function(x=NULL,nomatch=NA_integer_,value=F,...){  
+      ##
+      nullx <- if( is.null(x) ){x <- table; T} else F
+      ##
+      ## "polymorphisme"
+      ##
+      ##
+      x.clnm <- if( ( kl <-class(x)) %in% c('IPv6', 'IPv6r' ) ){
+        tolower(kl)
+      }else stop('bsearch with overlap not implemented for object of class ', kl , ' and table ', class(table))    
+      ##
+      m <- .Call(
+          ## "dispatch"
+          if( x.clnm=='ipv6') "Rip_bsearch_intvTree_ipv6_in_ipv6r_0" else "Rip_bsearch_intvTree_ipv6r_overlap_ipv6r_0"
+          ## 
+          , x 
+          , table[idx+1L]
+          , idx
+          , minmxIdx
+          , NA_integer_
+      )
+      ## 
+      if( value ){
+        ##
+        return(
+          data.frame(
+            rep(m, diff(attr(m, 'ptr')))
+            , table[attr(m, 'midx')+1L]
+          ) |> `colnames<-`(c(
+              if(!nullx) deparse(substitute(x)) else "table"
+              , "m"
+            )
+          )
+        )
+      }
+      ##
+      attr(m, "midx") <- attr(m, "midx") + 1L
+      ##
+      m
+    }
+    ## 
     if( !length(table) ) stop("empty table")
     ##
-    ## TODO: rm NA
+    table <- table[!(na<-is.na(table))]
     ##
-    table <- table[!is.na(table)]
-    ##
+    if( (na <- sum(na) ) ) warning("removing ", na, " NA from table")
+    ## 
     idx <- order( ## ip.order
-      ##
-      ipv6(table)[['lo']]  
-      ##
-      , na.last= NA
+      table 
+      ##, na.last= NA ## rm ?
     ) - 1L
     ##
+    minmxIdx <- if(overlap){
+      ##
+      .Call(
+        "Rip_bsearch_intvTree_ipv6r_index_0"
+        , table[idx+1L]
+        , idx
+      )
+    } 
+    ##
     return(
-      f
+      if( !overlap ) bsearch else bsearch.overlap
     )
   }
 )
