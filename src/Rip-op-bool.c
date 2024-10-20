@@ -370,27 +370,250 @@ int
  
 RIP_OP2_BOOL(v6r, gt, Ripaddr_ipv6r_cmp_gt)
 
-#if 0  
- 
-__mmask8
-  Ripaddr_ipv6_cmp_simd_gt(
-    __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
+#if __RIP_AVX512__ 
+
+___RIP_inline __mmask16
+  Ripaddr_ipv4rx16_cmp_eq_mask(
+    __m512i vip1_lo, __m512i vip1_hi, __m512i vip2_lo, __m512i vip2_hi
 ){
    
-  __mmask8 hi_gt = _mm256_cmpgt_epu64_mask( vip1_hi, vip2_hi );
+  return
+    _mm512_cmpeq_epi32_mask(vip1_lo, vip2_lo) & _mm512_cmpeq_epi32_mask(vip1_hi, vip2_hi)  
+  ;
+}
  
+ 
+___RIP_inline __mmask16
+  Ripaddr_ipv4rx16_cmp_lt_mask(
+    __m512i vip1_lo, __m512i vip1_hi, __m512i vip2_lo, __m512i vip2_hi
+){
+#if 0
    
-  __mmask8 hi_eq = _mm256_cmpeq_epu64_mask( vip1_hi, vip2_hi );
- 
+  __mmask16 hi_lt = _mm512_cmplt_epu32_mask( vip1_hi, vip2_hi );
    
-  __mmask8 lo_gt = _mm256_cmplt_epu64_mask( vip1_lo, vip2_lo );
+  __mmask16 hi_eq = _mm512_cmpeq_epu32_mask( vip1_hi, vip2_hi );
+   
+  __mmask16 lo_lt = _mm512_cmplt_epu32_mask( vip1_lo, vip2_lo );
+   
+  return
+   hi_lt | ( hi_eq & lo_lt )
+  ;
+#else
+   
+  __mmask16 hi_lt = _mm512_cmplt_epu32_mask( vip1_hi, vip2_hi );
+   
+  __mmask16 lo_lt = _mm512_cmplt_epu32_mask( vip1_lo, vip2_lo );
+   
+  return
+   hi_lt | ( ~hi_lt & lo_lt )
+  ;
+#endif
+}
  
+ 
+___RIP_inline __mmask16
+  Ripaddr_ipv4rx16_cmp_gt_mask(
+    __m512i vip1_lo, __m512i vip1_hi, __m512i vip2_lo, __m512i vip2_hi
+){
+   
+  __mmask16 hi_gt = _mm512_cmpgt_epu32_mask( vip1_hi, vip2_hi );
+   
+  __mmask16 hi_eq = _mm512_cmpeq_epu32_mask( vip1_hi, vip2_hi );
+   
+  __mmask16 lo_gt = _mm512_cmplt_epu32_mask( vip1_lo, vip2_lo );
    
   return
    hi_gt | ( hi_eq & lo_gt )
   ;
 }
+
+___RIP_inline __mmask8
+  Ripaddr_ipv6x8_cmp_eq_mask(
+    __m512i vip1_lo, __m512i vip1_hi, __m512i vip2_lo, __m512i vip2_hi
+){
+   
+  return
+    _mm512_cmpeq_epi64_mask(vip1_lo, vip2_lo) & _mm512_cmpeq_epi64_mask(vip1_hi, vip2_hi)  
+  ;
+}
  
+ 
+___RIP_inline __mmask8
+  Ripaddr_ipv6x8_cmp_gt_mask(
+    __m512i vip1_lo, __m512i vip1_hi, __m512i vip2_lo, __m512i vip2_hi
+){
+#if 0
+   
+  __mmask8 hi_gt = _mm512_cmpgt_epu64_mask( vip1_hi, vip2_hi );
+   
+  __mmask8 hi_eq = _mm512_cmpeq_epu64_mask( vip1_hi, vip2_hi );
+   
+  __mmask8 lo_gt = _mm512_cmpgt_epu64_mask( vip1_lo, vip2_lo );
+   
+  return
+   hi_gt | ( hi_eq & lo_gt )
+  ;
+#else
+   
+  __mmask8 hi_gt = _mm512_cmpgt_epu64_mask( vip1_hi, vip2_hi );
+   
+  __mmask8 lo_gt = _mm512_cmpgt_epu64_mask( vip1_lo, vip2_lo );
+   
+  return
+   hi_gt | ( ~hi_gt & lo_gt )
+  ;
+#endif
+}
+
+#if 1  
+ 
+#define ___IP_VERSION__      v4
+#define ___IP_VERSION_NUM__  40
+ 
+ 
+#define ___SIMD_Fn__(___x__, ___y__) \
+  _mm512_cmpeq_epi32_mask( ___x__##_vip, ___y__##_vip)
+ 
+#define ___SCALAR_Fn__     Ripaddr_ipv4_cmp_eq
+ 
+SEXP Rip_ipv4_op2_bool_eq_3( 
+    SEXP Rip1, SEXP Rip2 
+){ 
+ 
+#define ___IP_OP2_BOOL_BODY__
+   
+  #include "templates/Rip-iter-avx512-template.c"
+ 
+#undef ___IP_OP2_BOOL_BODY__
+}
+ 
+#undef ___SIMD_Fn__   
+#undef ___SCALAR_Fn__ 
+ 
+ 
+#define ___SIMD_Fn__(___x__, ___y__) \
+  _mm512_cmplt_epu32_mask( ___x__##_vip, ___y__##_vip)
+ 
+#define ___SCALAR_Fn__     Ripaddr_ipv4_cmp_lt
+ 
+SEXP Rip_ipv4_op2_bool_lt_3( 
+    SEXP Rip1, SEXP Rip2 
+){ 
+ 
+#define ___IP_OP2_BOOL_BODY__
+   
+  #include "templates/Rip-iter-avx512-template.c"
+ 
+#undef ___IP_OP2_BOOL_BODY__
+}
+ 
+#undef ___SIMD_Fn__   
+#undef ___SCALAR_Fn__ 
+ 
+ 
+#define ___SIMD_Fn__(___x__, ___y__) \
+  _mm512_cmpgt_epu32_mask( ___x__##_vip, ___y__##_vip)
+ 
+#define ___SCALAR_Fn__     Ripaddr_ipv4_cmp_gt
+ 
+SEXP Rip_ipv4_op2_bool_gt_3( 
+    SEXP Rip1, SEXP Rip2 
+){ 
+ 
+#define ___IP_OP2_BOOL_BODY__
+   
+  #include "templates/Rip-iter-avx512-template.c"
+ 
+#undef ___IP_OP2_BOOL_BODY__
+}
+ 
+#undef ___SIMD_Fn__   
+#undef ___SCALAR_Fn__ 
+
+#undef ___IP_VERSION__   
+#undef ___IP_VERSION_NUM__ 
+ 
+#endif  
+
+#if 1  
+ 
+#define ___IP_VERSION__      v4r
+#define ___IP_VERSION_NUM__  41
+ 
+ 
+#define ___SIMD_Fn__(___x__, ___y__) \
+  Ripaddr_ipv4rx16_cmp_eq_mask( ___x__##_vlo , ___x__##_vhi , ___y__##_vlo , ___y__##_vhi)
+ 
+#define ___SCALAR_Fn__     Ripaddr_ipv4r_cmp_eq
+ 
+SEXP Rip_ipv4r_op2_bool_eq_3( 
+    SEXP Rip1, SEXP Rip2 
+){ 
+ 
+#define ___IP_OP2_BOOL_BODY__
+   
+  #include "templates/Rip-iter-avx512-template.c"
+ 
+#undef ___IP_OP2_BOOL_BODY__
+}
+ 
+#undef ___SIMD_Fn__   
+#undef ___SCALAR_Fn__ 
+
+#undef ___IP_VERSION__   
+#undef ___IP_VERSION_NUM__   
+ 
+#endif  
+
+#if 1  
+ 
+#define ___IP_VERSION__      v6
+#define ___IP_VERSION_NUM__  60
+
+#define ___SIMD_Fn__(___x__, ___y__) \
+  Ripaddr_ipv6x8_cmp_eq_mask( ___x__##_vlo , ___x__##_vhi , ___y__##_vlo , ___y__##_vhi)
+
+#define ___SCALAR_Fn__     Ripaddr_ipv6_cmp_eq
+ 
+SEXP Rip_ipv6_op2_bool_eq_3( 
+    SEXP Rip1, SEXP Rip2 
+){ 
+ 
+#define ___IP_OP2_BOOL_BODY__
+   
+  #include "templates/Rip-iter-avx512-template.c"
+ 
+#undef ___IP_OP2_BOOL_BODY__
+}
+ 
+#undef ___SIMD_Fn__   
+#undef ___SCALAR_Fn__ 
+ 
+ 
+#define ___SIMD_Fn__(___x__, ___y__) \
+  Ripaddr_ipv6x8_cmp_gt_mask( ___x__##_vlo , ___x__##_vhi , ___y__##_vlo , ___y__##_vhi)
+
+#define ___SCALAR_Fn__     Ripaddr_ipv6_cmp_gt
+ 
+SEXP Rip_ipv6_op2_bool_gt_3( 
+    SEXP Rip1, SEXP Rip2 
+){ 
+ 
+#define ___IP_OP2_BOOL_BODY__
+   
+  #include "templates/Rip-iter-avx512-template.c"
+ 
+#undef ___IP_OP2_BOOL_BODY__
+}
+ 
+#undef ___SIMD_Fn__   
+#undef ___SCALAR_Fn__ 
+
+#undef ___IP_VERSION__   
+#undef ___IP_VERSION_NUM__   
+ 
+#endif  
+
 #endif  
 
 #ifdef __RIP_AVX2__
@@ -1201,6 +1424,21 @@ Rprintf("%d %d\n", Rip1_nip, Rip2_nip);
  
 #define ___IP_VERSION__      v4
 #define ___IP_VERSION_NUM__  40
+
+#define ___SCALAR_Fn__     Ripaddr_ipv4_cmp_eq
+ 
+SEXP Rip_ipv4_op2_bool_scalar_eq_2( 
+    SEXP Rip1, SEXP Rip2 
+){ 
+ 
+#define ___IP_OP2_BOOL_BODY__
+   
+  #include "templates/Rip-iter-template.c"
+ 
+#undef ___IP_OP2_BOOL_BODY__
+}
+ 
+#undef ___SCALAR_Fn__ 
  
  
 #define ___SIMD_Fn__(___x__, ___y__) \

@@ -110,6 +110,8 @@ typedef struct IPv6r {
  
 #define ___RIP_inline __attribute__((always_inline)) inline  
 
+extern const uint64_t ipv4GatherHiTbl[];
+ 
 extern SEXP
   Rip_dataSlotSym, Rip_ipfSym, Rip_idxSym
   , Rip_ipv4Sym, Rip_ipv6Sym
@@ -184,6 +186,13 @@ void RIP_ipv6r_Rprintf_0(void* ipv6r);
  
 #ifdef __RIP_AVX2__
    
+  void printBits_uint32(uint32_t v);
+  void printBits_uint64(uint64_t v);
+   
+  void Rippaddr_i8x16_Rprintf_0(__m128i v);
+   
+  void Rippaddr_i16x8_Rprintf_0(__m128i v);
+   
   void Ripaddr_mm256i_i32_Rprintf_0(__m256i v);
    
   void Ripaddr_mm256i_i64_Rprintf_0(__m256i v);
@@ -194,6 +203,8 @@ void RIP_ipv6r_Rprintf_0(void* ipv6r);
   void Rippaddr_ipv4rx8_Rprintf_0(__m256i vlo, __m256i vhi);
    
   void Rippaddr_ipv6x4_Rprintf_0(__m256i vlo, __m256i vhi);
+   
+  void Rippaddr_ipv6rx4_Rprintf_0(__m256i vlo_lo,__m256i vlo_hi, __m256i vhi_lo, __m256i vhi_hi);
 #endif
 
 int 
@@ -205,9 +216,17 @@ int
   Ripaddr_ipv4_cmp_lt(
    IPv4 ip1, IPv4 ip2
 );
+int 
+  Ripaddr_ipv4_cmp_le(
+   IPv4 ip1, IPv4 ip2
+);
  
 int 
   Ripaddr_ipv4_cmp_gt(
+    IPv4 ip1, IPv4 ip2
+);
+int 
+  Ripaddr_ipv4_cmp_ge(
     IPv4 ip1, IPv4 ip2
 );
 
@@ -282,6 +301,11 @@ __mmask8
  
  
 __mmask8
+  Ripaddr_ipv4rx8_cmp_eq_mask0(
+    __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
+);
+ 
+__mmask8
   Ripaddr_ipv4rx8_cmp_gt_mask0(
     __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
 );
@@ -301,6 +325,14 @@ __mmask8
   Ripaddr_ipv6x4_cmp_gt_mask0(
     __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
 );
+__mmask8
+  Ripaddr_ipv6x4_cmp_le_mask0(
+    __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
+);
+__mmask8
+  Ripaddr_ipv6x4_cmp_ge_mask0(
+    __m256i vip1_lo, __m256i vip1_hi, __m256i vip2_lo, __m256i vip2_hi
+);
  
 __m256i
   Ripaddr_ipv6_cmp_simd_lt(
@@ -316,6 +348,14 @@ __m256i
  
  
 __mmask8
+  Ripaddr_ipv6rx4_cmp_eq_mask0(
+      __m256i vip1_lo_lo, __m256i vip1_lo_hi
+    , __m256i vip1_hi_lo, __m256i vip1_hi_hi
+    , __m256i vip2_lo_lo, __m256i vip2_lo_hi
+    , __m256i vip2_hi_lo, __m256i vip2_hi_hi
+);
+ 
+__mmask8
   Ripaddr_ipv6rx4_cmp_lt_mask0(
       __m256i vip1_lo_lo, __m256i vip1_lo_hi
     , __m256i vip1_hi_lo, __m256i vip1_hi_hi
@@ -325,6 +365,13 @@ __mmask8
  
 __mmask8
   Ripaddr_ipv6rx4_cmp_gt_mask0(
+      __m256i vip1_lo_lo, __m256i vip1_lo_hi
+    , __m256i vip1_hi_lo, __m256i vip1_hi_hi
+    , __m256i vip2_lo_lo, __m256i vip2_lo_hi
+    , __m256i vip2_hi_lo, __m256i vip2_hi_hi
+);
+__mmask8
+  Ripaddr_ipv6rx4_cmp_ge_mask0(
       __m256i vip1_lo_lo, __m256i vip1_lo_hi
     , __m256i vip1_hi_lo, __m256i vip1_hi_hi
     , __m256i vip2_lo_lo, __m256i vip2_lo_hi

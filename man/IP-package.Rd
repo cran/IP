@@ -1,9 +1,9 @@
 %%
-%%
-%%
 \name{IP-package}
 %%
 \docType{package}
+%%
+\keyword{ package }
 %%
 \alias{IP-package}
 %%
@@ -86,18 +86,13 @@
 %%
 \subsection{SIMD support}{
 
-  The IP package provide an experimental support for AVX2 vectorized operations for IP comparison and arithmetic. 
-  To enable AVX2 support, please pass the \code{"--enable-avx2"} \code{configure.args} argument to the \code{install.packages()} function. 
+  The IP package provides an experimental support for AVX2 vectorized operations for IP comparison and arithmetic and SSE vectorized operations for IPv4 addresses input. 
+  To enable SIMD support, please pass the \code{"--enable-avx2"} \code{configure.args} argument to the \code{install.packages()} function. 
 }
 %%
 \subsection{Data protection}{
   
   One last caveat. In certain countries such as EU member countries, IP addresses are considered personal data (see Article 29 Working Party Opinion 4/2007 and ECJ ruling dated 19 October 2016 --ref.: C582/14). IP processing must therefore be done in accordance to the applicable laws and regulations.
 }
-}
-%%
-\keyword{ package }
-%%\seealso{ \code{\link{}}  }
-% \examples{
 
-% }
+} %% /subsection

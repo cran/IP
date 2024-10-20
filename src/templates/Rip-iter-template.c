@@ -32,6 +32,10 @@ const int64_t mask_permTbl_Lo64x4[] = {
 #undef ___MAKE_INDEX
  
 #endif
+ 
+ 
+#define RIP_NEXT_ALIGN(___ptr__, ___ty__, ___a__) \
+  (___ty__*) ( ( (uintptr_t)  ___ptr__ + (___a__ - 1) ) & (uintptr_t) ~(___a__ - 1) )
 
 #define RIPv4_LOAD(___ip1__,___ip2__, ___SUFF__, ___i__ ) \
     __m256i Rip1_##___SUFF__##_vip = _mm256_loadu_si256( (__m256i const *) & ___ip1__##_ip_ptr[___i__] ); \
@@ -741,6 +745,7 @@ Ripaddr_mm256i_i32_Rprintf_0(_mm256_castps_si256( _mm256_permute_ps(_mm256_casts
     }  
   
 #endif  
+ 
      
     i1=i2=i;
     RIP_ITERATE_NEXT(nip, Rip1_nip, Rip2_nip){ 
@@ -768,7 +773,7 @@ Ripaddr_mm256i_i32_Rprintf_0(_mm256_castps_si256( _mm256_permute_ps(_mm256_casts
         Res_ip_idxptr[i] = NA_INTEGER; 
       } 
      
-    } 
+    }  
   } 
   RIP_END 
   ___IP_IS_NA_WARN_REPROTECT( Res, nip, STRINGIFY(___opname__) )   
@@ -786,6 +791,7 @@ Ripaddr_mm256i_i32_Rprintf_0(_mm256_castps_si256( _mm256_permute_ps(_mm256_casts
    
   ___IP_SLOTS_GET( Rip1 ) 
   ___IP_SLOTS_GET( Rip2 ) 
+   
   nip = ( (Rip1_nip >0) & (Rip2_nip>0) ) ? Rip1_nip > Rip2_nip ? Rip1_nip : Rip2_nip : 0; 
   
     
@@ -800,11 +806,12 @@ Ripaddr_mm256i_i32_Rprintf_0(_mm256_castps_si256( _mm256_permute_ps(_mm256_casts
   ){
  
      
-    int step=16;
-     
     i=0;
      
 #if defined( __RIP_AVX2__) && defined(___SIMD_Fn__)
+     
+    int step=16;
+ 
  
 #if 0
   const __m256 false = _mm256_castsi256_ps( _mm256_set1_epi32( 0x0 ) );
@@ -812,8 +819,10 @@ Ripaddr_mm256i_i32_Rprintf_0(_mm256_castps_si256( _mm256_permute_ps(_mm256_casts
 #endif
      
     ___BITMASK_UNPACK_CONST__
+
+    const int nstep = nip-(nip%step);
      
-    for(; i<nip-(nip%step); i+=step){
+    for(; i<nstep; i+=step){
  
  
 #if ___IP_VERSION_NUM__==40 || ___IP_VERSION_NUM__==41
@@ -885,6 +894,7 @@ Ripaddr_mm256i_i32_Rprintf_0(_mm256_castps_si256( _mm256_permute_ps(_mm256_casts
     }
  
 #endif   
+ 
      
     for(;i<nip;i++){
       ___IP_ELT_PTR_DCL(Rip1, i) 
@@ -913,7 +923,8 @@ Ripaddr_mm256i_i32_Rprintf_0(_mm256_castps_si256( _mm256_permute_ps(_mm256_casts
 
       const int step = 8;
        
-      for(; i<nip-(nip%step); i+=step){
+      const int nstep = nip-(nip%step);
+      for(; i<nstep; i+=step){
          
         __m256i Rip1_ip_vidx  = _mm256_loadu_si256( ( __m256i *) &Rip1_ip_idxptr[ i ]); 
         __m256i Rip2_ip_vidx  = _mm256_loadu_si256( ( __m256i *) &Rip2_ip_idxptr[ i ]); 
@@ -1126,8 +1137,7 @@ Rprintf("%d %d %d %d %d %d %d %d\n", _mm256_extract_epi32(rv, 0),_mm256_extract_
       ){ 
         ___IP_ELT_PTR_DCL(Rip1, idx1) 
         ___IP_ELT_PTR_DCL(Rip2, idx2)
-        RIP_CHECK_IDX(Rip1_ip_idxptr, idx1, nip) 
-        RIP_CHECK_IDX(Rip2_ip_idxptr, idx2, nip)     
+         
         resptr[i] = ___SCALAR_Fn__( 
            Rip1_ip_elt_ptr 
            , Rip2_ip_elt_ptr 
@@ -1149,9 +1159,7 @@ Rprintf("%d %d %d %d %d %d %d %d\n", _mm256_extract_epi32(rv, 0),_mm256_extract_
       } 
       ___IP_ELT_PTR_DCL(Rip1, idx1) 
       ___IP_ELT_PTR_DCL(Rip2, idx2)
-      RIP_CHECK_IDX(Rip1_ip_idxptr, idx1, nip) 
-      RIP_CHECK_IDX(Rip2_ip_idxptr, idx2, nip)     
-    
+       
       resptr[i] = ___SCALAR_Fn__( 
          Rip1_ip_elt_ptr 
          , Rip2_ip_elt_ptr 

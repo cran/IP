@@ -1,5 +1,4 @@
  
- 
 #include "Rip.h"
 
 SEXP
@@ -53,7 +52,8 @@ void
   setVar(install("IP_AVX2") , ScalarLogical(0), rho );
 #endif
 }
-
+ 
+ 
 IPv4 *RIP_cache_ipv4_val;
 IPv4  RIP_cache_ipv4_nval;
 int   RIP_cache_ipv4_val_i;
@@ -67,7 +67,6 @@ int   RIP_cache_ipv4_lkup_ncoll;
  
 RIPv4_h *RIPv4_h_tb;
 
- 
 SEXP arraycp(
   SEXP x
   , int xnr, int xnc
@@ -127,7 +126,6 @@ SEXP arraycp(
   UNPROTECT(1);
   return Res;
 }
-
  
 SEXP Rarraycp_0(
   SEXP x
@@ -188,7 +186,30 @@ SEXP Rarraycp_0(
   UNPROTECT(1);
   return Res;
 }
-
+ 
+ 
+void printBits(size_t const size, void const * const ptr)
+{
+    unsigned char *b = (unsigned char*) ptr;
+    unsigned char byte;
+    int i, j;
+    
+    for (i = size-1; i >= 0; i--) {
+        for (j = 7; j >= 0; j--) {
+            byte = (b[i] >> j) & 1;
+            Rprintf("%u", byte);
+        }
+    }
+    Rprintf("\n");
+}  
+ 
+void printBits_uint32(uint32_t v){
+  printBits(sizeof(v), &v);
+}
+ 
+void printBits_uint64(uint64_t v){
+  printBits(sizeof(v), &v);
+}
  
 void RIP_ipv4_Rprintf_0(IPv4 ipv4){
   char ipstringbuff[IP4_STRING_SZMAX]; 
@@ -206,14 +227,12 @@ void RIP_ipv4r_Rprintf_0(void* ip4r){
   ipstringbuff[sz] = '\0';
   Rprintf("%s", ipstringbuff); 
 }
-
  
 void RIP_ipv6_Rprintf_0(void* ipv6){
   char ipstringbuff[IP6_STRING_SZMAX]; 
   ipv6_raw_output((uint64_t*)ipv6, (char*) &ipstringbuff, IP6_STRING_SZMAX); 
   Rprintf("%s", ipstringbuff); 
 }
-
  
 void RIP_ipv6r_Rprintf_0(void* ipv6r){
   char ipstringbuff[IP6R_STRING_SZMAX]; 
@@ -232,20 +251,45 @@ void Ripaddr_mm256i_i32_Rprintf_0(__m256i v){
  
 void Ripaddr_mm256i_i64_Rprintf_0(__m256i v){
   Rprintf(
-    "%019" PRIu64 " %019" PRIu64 " %019" PRIu64 " %019" PRIu64 ""
+     
+    "%019" PRIi64 " %019" PRIi64 " %019" PRIi64 " %019" PRIi64 ""
     , v[0], v[1], v[2], v[3]
   );
 }
  
 void RIP_mm256i_i64_Rprintf_0(__m256i v){
   Rprintf(
-    "%019" PRIu64 " %019" PRIu64 " %019" PRIu64 " %019" PRIu64 ""
+     
+    "%019" PRIi64 " %019" PRIi64 " %019" PRIi64 " %019" PRIi64 ""
     , v[0], v[1], v[2], v[3]
   );
 }
+ 
+void Rippaddr_ipv6x4_Rprintf_0(__m256i vlo, __m256i vhi){
+  IPv6 tmp;
+  tmp.ipv6[1] =_mm256_extract_epi64(vlo, 0);tmp.ipv6[0] =_mm256_extract_epi64(vhi, 0);RIP_ipv6_Rprintf_0(&tmp);Rprintf("\n");
+  tmp.ipv6[1] =_mm256_extract_epi64(vlo, 1);tmp.ipv6[0] =_mm256_extract_epi64(vhi, 1);RIP_ipv6_Rprintf_0(&tmp);Rprintf("\n");
+  tmp.ipv6[1] =_mm256_extract_epi64(vlo, 2);tmp.ipv6[0] =_mm256_extract_epi64(vhi, 2);RIP_ipv6_Rprintf_0(&tmp);Rprintf("\n");
+  tmp.ipv6[1] =_mm256_extract_epi64(vlo, 3);tmp.ipv6[0] =_mm256_extract_epi64(vhi, 3);RIP_ipv6_Rprintf_0(&tmp);Rprintf("\n");
+}
+ 
+void Rippaddr_ipv6rx4_Rprintf_0(__m256i vlo_lo,__m256i vlo_hi, __m256i vhi_lo, __m256i vhi_hi){
+  IPv6r tmp;
+  tmp.lo.ipv6[1] =_mm256_extract_epi64(vlo_lo, 0);tmp.lo.ipv6[0] =_mm256_extract_epi64(vlo_hi, 0);
+  tmp.hi.ipv6[1] =_mm256_extract_epi64(vhi_hi, 0);tmp.hi.ipv6[0] =_mm256_extract_epi64(vhi_hi, 0);
+  RIP_ipv6r_Rprintf_0(&tmp);Rprintf("\n");
+  tmp.lo.ipv6[1] =_mm256_extract_epi64(vlo_lo, 1);tmp.lo.ipv6[0] =_mm256_extract_epi64(vlo_hi, 1);
+  tmp.hi.ipv6[1] =_mm256_extract_epi64(vhi_hi, 1);tmp.hi.ipv6[0] =_mm256_extract_epi64(vhi_hi, 1);
+  RIP_ipv6r_Rprintf_0(&tmp);Rprintf("\n");
+  tmp.lo.ipv6[1] =_mm256_extract_epi64(vlo_lo, 2);tmp.lo.ipv6[0] =_mm256_extract_epi64(vlo_hi, 2);
+  tmp.hi.ipv6[1] =_mm256_extract_epi64(vhi_hi, 2);tmp.hi.ipv6[0] =_mm256_extract_epi64(vhi_hi, 2);
+  RIP_ipv6r_Rprintf_0(&tmp);Rprintf("\n");
+  tmp.lo.ipv6[1] =_mm256_extract_epi64(vlo_lo, 3);tmp.lo.ipv6[0] =_mm256_extract_epi64(vlo_hi, 3);
+  tmp.hi.ipv6[1] =_mm256_extract_epi64(vhi_hi, 3);tmp.hi.ipv6[0] =_mm256_extract_epi64(vhi_hi, 3);
+  RIP_ipv6r_Rprintf_0(&tmp);Rprintf("\n");
+}
 #endif
 
- 
 ___RIP_inline 
 uint32_t  hostmask(unsigned masklen)
 {
@@ -289,7 +333,6 @@ uint64 Ripaddr_ipv6_hostmask_hi(unsigned masklen)
         return ~((uint64)0);
     return (((uint64)(1U)) << (64-masklen)) - 1U;
 }
-
  
 uint64_t Ripaddr_ipv6_hostmask_lo(unsigned masklen)
 {
@@ -393,8 +436,96 @@ SEXP Rip_ip##___IPv__##_init_1( \
 RIP_IP_INIT_1(v4)
  
 RIP_IP_INIT_1(v4r)
-
  
+ 
+#ifdef __RIP_AVX2__
+ 
+ 
+#if 1
+ 
+___RIP_inline
+int Rippaddr_ipv4string_loadu_si128(
+    const char *s
+    , __m128i *v
+){
+   
+  char buff[16] __attribute__ ((aligned(16)));
+   
+  int nc = 0;
+   
+  if( 
+    ( ( (uintptr_t) s & 4095 ) < (4096 - 16) )
+  ){
+ 
+     
+    *v = _mm_loadu_si128( (__m128i const *) s);
+ 
+     
+    int zpos = _mm_movemask_epi8( _mm_cmpeq_epi8(*v, _mm_setzero_si128()) );
+     
+    nc = __builtin_ffs(zpos) - 1 ;
+    
+  }else{
+     
+    while( *s && nc < 16 ){  
+ 
+       
+      buff[nc] = *s;
+      nc++;
+      s++;
+ 
+    }
+    buff[nc] = '\0';
+ 
+     
+    *v = _mm_load_si128( (__m128i const *) &buff);
+  }
+ 
+   
+  return nc;
+}
+#endif
+ 
+#if 1
+#define ___ipv4GatherHiTbl__
+#include "templates/Rip-common-tables.c"
+#undef ___ipv4GatherHiTbl__
+#endif
+ 
+#if 1
+ 
+SEXP
+   Rip_ipv4_input128_lut_0(
+     SEXP Ripstrings
+){
+   
+  int dbg=0;
+#define ___IP_IPv4_PARSE_INPUT__
+#define ___IP_IPv4_PARSE_ITER_BODY__
+#define ___IP_IPv4_PARSE_LUT__
+#include "templates/Rip-input-iter-template.c"   
+#undef ___IP_IPv4_PARSE_INPUT__  
+#undef ___IP_IPv4_PARSE_ITER_BODY__
+#undef ___IP_IPv4_PARSE_LUT__   
+}
+ 
+SEXP
+   Rip_ipv4_init28_lut_0(
+     SEXP Rip, SEXP Ripstrings
+){
+   
+  int dbg=0;
+#define ___IP_IPv4_PARSE_ITER_BODY__
+#define ___IP_IPv4_PARSE_LUT__
+#include "templates/Rip-input-iter-template.c"   
+#undef ___IP_IPv4_PARSE_ITER_BODY__
+#undef ___IP_IPv4_PARSE_LUT__     
+}
+#endif
+ 
+ 
+#endif  
+
 #define RIP_IP_AS_CHARACTER(___IPv__) \
 SEXP Rip_ip##___IPv__##_as_character_0(SEXP Rip ){ \
   SEXP Ripstrings;int i, nip=0, nprotected=0; \
@@ -443,7 +574,8 @@ RIP_IP_AS_CHARACTER(v6)
  
 #define RIP_float64_NA_SET( ___Rnum__, ___i__) \
   ___Rnum__##ptr[___i__] = NA_REAL; \
-
+  
+ 
 #define RIP_fl64nx2_ALLOC(___Rnum__, ___nip__) \
   SEXP ___Rnum__; \
   PROTECT( ___Rnum__      = allocMatrix(REALSXP, ___nip__, 2 ) ); \
@@ -484,7 +616,8 @@ RIP_IP_AS_CHARACTER(v6)
   ___Rint__##ptr[___i__+   ___Rint__##nr] = NA_INTEGER; \
   ___Rint__##ptr[___i__+ 2*___Rint__##nr] = NA_INTEGER; \
   ___Rint__##ptr[___i__+ 3*___Rint__##nr] = NA_INTEGER; \
-
+  
+ 
 #define RIP_fl64nx4_ALLOC(___Rnum__, ___nip__) \
   SEXP ___Rnum__; \
   PROTECT( ___Rnum__      = allocMatrix(REALSXP, ___nip__, 4 ) ); \
@@ -506,7 +639,8 @@ RIP_IP_AS_CHARACTER(v6)
   ___Rnum__##ptr[___i__+   ___Rnum__##nr] = NA_REAL; \
   ___Rnum__##ptr[___i__+ 2*___Rnum__##nr] = NA_REAL; \
   ___Rnum__##ptr[___i__+ 3*___Rnum__##nr] = NA_REAL; \
-
+  
+ 
 #define RIP_int32vec_ALLOC(___Rint__, ___nip__) \
   SEXP ___Rint__; \
   PROTECT( ___Rint__ = allocVector(INTSXP, ___nip__ ) ); \
@@ -580,7 +714,7 @@ SEXP Rip_ip##___IPv__##_##___name__##_0( SEXP Rip ){ \
     ){ \
         \
       RIP##___IPv__##_ELT_PTR_DCL(Rip, i) \
-      RIP_##___R_t__##_RES_SET(Res, i, ___fn__, Rip_ip_elt_ptr);\
+      RIP_##___R_t__##_RES_SET(Res, i, ___fn__, Rip_ip_elt_ptr); \
        \
     }else{ \
        \

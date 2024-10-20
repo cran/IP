@@ -719,6 +719,7 @@ int
     48L, 32L, 16L, 0L
   );
    
+   
  *vres_hi = _mm256_add_epi64(
       *vres_hi
     , _mm256_and_si256(

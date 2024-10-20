@@ -24,7 +24,13 @@ setMethod(
     ##
     if ( length(ipstring) ){
       #
-      .Object <- .Call(
+      .Object <- if( IP_AVX2 ) .Call(
+        ##
+        'Rip_ipv4_init28_lut_0'
+        ##
+        , .Object
+        , ipstring
+      ) else .Call(
         ##
         'Rip_ipv4_init_0'
         ##
@@ -1051,6 +1057,50 @@ setMethod(
   ## 
   , function(e1,e2){
     if( IP_AVX2 ) .Call("Rip_ipv4r_op2_bool_neq_2", e1, e2 ) else .Call("Rip_ipv4r_op2_bool_neq_0", e1, e2 )
+  }
+)
+##
+##
+##
+setMethod(
+  "<"
+  , signature(e1 = "IPv4r", e2 = "IPv4r")
+  ## 
+  , function(e1,e2){
+    if( IP_AVX2 ) .Call("Rip_ipv4r_op2_bool_lt_2", e1, e2 ) else .Call("Rip_ipv4r_op2_bool_lt_0", e1, e2 )
+  }
+)
+##
+##
+##
+setMethod(
+  "<="
+  , signature(e1 = "IPv4r", e2 = "IPv4r")
+  ## 
+  , function(e1,e2){
+    if( IP_AVX2 ) .Call("Rip_ipv4r_op2_bool_le_2", e1, e2 ) else .Call("Rip_ipv4r_op2_bool_le_0", e1, e2 )
+  }
+)
+##
+##
+##
+setMethod(
+  ">"
+  , signature(e1 = "IPv4r", e2 = "IPv4r")
+  ## 
+  , function(e1,e2){
+    if( IP_AVX2 ) .Call("Rip_ipv4r_op2_bool_gt_2", e1, e2 ) else .Call("Rip_ipv4r_op2_bool_gt_0", e1, e2 )
+  }
+)
+##
+##
+##
+setMethod(
+  ">="
+  , signature(e1 = "IPv4r", e2 = "IPv4r")
+  ## 
+  , function(e1,e2){
+    if( IP_AVX2 ) .Call("Rip_ipv4r_op2_bool_ge_2", e1, e2 ) else .Call("Rip_ipv4r_op2_bool_ge_0", e1, e2 )
   }
 )
 ## TODO:

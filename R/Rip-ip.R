@@ -164,6 +164,8 @@ setMethod(
       }
     } ## !ipstrings
     ## 
+    ## ¿ no warnings ?
+    ## 
     if( na <-length(which(is.na(.Object@.Data) ) ) )warning( length(.Object@.Data) - ( na ) )
 ##
 # cat("IP: init exit\n")

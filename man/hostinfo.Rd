@@ -8,6 +8,7 @@
 %%
 %%
 \alias{host-class}
+\alias{idn}
 %%
 %%
 %%
@@ -193,7 +194,7 @@
   }
   %%
   Since \code{localhost.ip()} needs OS specific system call ---as well as \code{host()} and \code{host.info()}---, this function is only available for \bold{POSIX compliant OS} at the moment. 
-  Support of Internationalized Domain Names (IDN) also depends on the system's libraries. For instance, glibc supports IDN starting with version 2.3.4. Use the \code{toIdna()} function to ensure proper domain names encoding. Note that result may differ depdending on the flag argument.
+  Support of Internationalized Domain Names (IDN) also depends on the system's libraries. For instance, glibc supports IDN starting with version 2.3.4. Use the \code{toIdna()} function to ensure proper domain names encoding. Note that result may differ depdending on the flag argument as shown in the examples.
   %%
   In addition, the \code{host()} and \code{host.info()} methods are still \bold{very experimental} and might change in the future.
   

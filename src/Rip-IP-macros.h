@@ -36,8 +36,21 @@
   uint64_t *___vname__##_ip_lo_ptr=NULL; \
   int       ___vname__##_ip_protidx; \
   int      *___vname__##_ip_idxptr; \
-  int       ___vname__##_ip_idx  =-1; \
-
+  int       ___vname__##_ip_idx  =-1; 
+  
+ 
+#define RIP_IP_SLOTS_DCL(___vname__) \
+  SEXP ___vname__##_ipv4; \
+  SEXP ___vname__##_ipv6; \
+  SEXP ___vname__##_ipv;
+  
+ 
+#define RIP_IPr_SLOTS_DCL(___vname__) \
+  SEXP ___vname__##_ipv4r; \
+  SEXP ___vname__##_ipv6r; \
+  SEXP ___vname__##_ipv;
+  
+ 
 #define ___RIPv4_SLOTS_ALLOC(___vname__, ___nip__, ___nipv4__) \
     \
  \
@@ -228,7 +241,7 @@
   ___vname__##_ip_idxptr = INTEGER( ___vname__##_DataSlot ); \
     \
    \
-  ___vname__##_ip_ptr =  Calloc( ___nip__ , IPv4 ) ; \
+  ___vname__##_ip_ptr =  R_Calloc( ___nip__ , IPv4 ) ; \
   
  
 #define RIPv4r_SLOTS_ALLOC(___vname__, ___nip__) \
@@ -270,6 +283,7 @@
   ___vname__##_ip_hi_ptr = ___vname__##ipv4r_ipv4r + ___nip__; \
   ___vname__##_ip_lo_ptr = ___vname__##ipv4r_ipv4r; \
 
+ 
 #define RIPv6_SLOTS_ALLOC(___vname__, ___nip__) \
   SEXP      ___vname__##_DataSlot, ___vname__##_ipv6; \
   uint64_t *___vname__##_ip_hi_ptr=NULL; \
@@ -497,8 +511,9 @@
   ___vname__##_ipv6        =  PROTECT(GET_SLOT(___vname__, Rip_ipv6Sym )); \
   ___vname__##_ip_hi_ptr   =  ( !isNull( ___vname__##_ipv6 ) ) ? (uint64_t *) REAL( ___vname__##_ipv6 )  : NULL; \
   ___vname__##_ip_lo_ptr   =  ( !isNull( ___vname__##_ipv6 ) ) ? (uint64_t *) REAL( ___vname__##_ipv6 )+___vname__##_ip_len  : NULL; \
-  nprotected+=2;\
+  nprotected+=2;
 
+ 
 #define RIPv6_IP_RipTbl(___vname__) \
   ___vname__##_ipv6 
   
@@ -522,6 +537,22 @@
   ___vname__##_ip_lo_ptr  =  ( !isNull( ___vname__##_ipv6r ) ) ? (uint64_t *) REAL( ___vname__##_ipv6r )  : NULL; \
   ___vname__##_ip_hi_ptr  =  ( !isNull( ___vname__##_ipv6r ) ) ? (uint64_t *) REAL( ___vname__##_ipv6r )+2*___vname__##_ip_len  : NULL; \
   nprotected+=2;\
+  
+ 
+#define RIP_IP_SLOTS_GET(___vname__) \
+  RIP_IP_SLOTS_DCL(___vname__) \
+  ___vname__##_ipv4 =  PROTECT(GET_SLOT(___vname__, Rip_ipv4Sym )); \
+  ___vname__##_ipv6 =  PROTECT(GET_SLOT(___vname__, Rip_ipv6Sym )); \
+  ___vname__##_ipv = PROTECT(GET_SLOT(___vname__, Rip_dataSlotSym )); \
+  nprotected+=3;
+  
+ 
+#define RIP_IPr_SLOTS_GET(___vname__) \
+  RIP_IP_SLOTS_DCL(___vname__) \
+  ___vname__##_ipv4r =  PROTECT(GET_SLOT(___vname__, Rip_iprSym )); \
+  ___vname__##_ipv6r =  PROTECT(GET_SLOT(___vname__, Rip_iprSym )); \
+  ___vname__##_ipv = PROTECT(GET_SLOT(___vname__, Rip_dataSlotSym )); \
+  nprotected+=3;
 
 #define RIPv4_RES_DCL(___res__ ) \
   IPv4  ___res__; \
@@ -549,8 +580,35 @@
   
  
 #define RIPv4_ELT_PTR_DCL(___vname__, ___i__ ) \
-  IPv4 ___vname__##_ip_elt_ptr= ___vname__##_ip_ptr[___vname__##_ip_idxptr[___i__]]; \
+  IPv4 ___vname__##_ip_elt_ptr= ___vname__##_ip_ptr[___vname__##_ip_idxptr[___i__]]; 
   \
+
+ 
+#define RIPv4_ELT_DPTR_DCL(___vname__, ___i__ ) \
+  IPv4 ___vname__##_ip_elt_ptr= ___vname__##_ip_ptr[ ___i__ ]; 
+ 
+#define RIPv4cache_ELT_DPTR_DCL(___vname__, ___i__ )  \
+  RIPv4cache_ELT_PTR_DCL(___vname__, ___i__ )
+ 
+#define RIPv4r_ELT_DPTR_DCL(___vname__, ___i__ ) \
+  IPv4   ___vname__##_ip_elt[2]; \
+  ___vname__##_ip_elt[0] = ___vname__##_ip_lo_ptr[ ___i__ ]; \
+  ___vname__##_ip_elt[1] = ___vname__##_ip_hi_ptr[ ___i__ ]; \
+  IPv4  *___vname__##_ip_elt_ptr = (IPv4 *) &___vname__##_ip_elt; 
+ 
+#define RIPv6_ELT_DPTR_DCL(___vname__, ___i__ ) \
+  uint64_t   ___vname__##_ip_elt[2]; \
+  ___vname__##_ip_elt[0] = ___vname__##_ip_hi_ptr[ ___i__ ]; \
+  ___vname__##_ip_elt[1] = ___vname__##_ip_lo_ptr[ ___i__]; \
+  uint64_t  *___vname__##_ip_elt_ptr = (uint64_t *) &___vname__##_ip_elt; 
+ 
+#define RIPv6r_ELT_DPTR_DCL(___vname__, ___i__ ) \
+  IPv6r   ___vname__##_ip_elt; \
+  ___vname__##_ip_elt.lo.ipv6[0] = ___vname__##_ip_lo_ptr[ ___i__ ]; \
+  ___vname__##_ip_elt.lo.ipv6[1] = ___vname__##_ip_lo_ptr[ ___i__ +___vname__##_ip_len]; \
+  ___vname__##_ip_elt.hi.ipv6[0] = ___vname__##_ip_hi_ptr[ ___i__ ]; \
+  ___vname__##_ip_elt.hi.ipv6[1] = ___vname__##_ip_hi_ptr[ ___i__ +___vname__##_ip_len]; \
+  IPv6r  *___vname__##_ip_elt_ptr = (IPv6r *) &___vname__##_ip_elt; 
 
  
 #if 0
@@ -558,14 +616,11 @@
 #define RIPv4cache_ELT_PTR_DCL(___vname__, ___i__ ) \
   if( ___vname__##_ip_idxptr[___i__]>= RIP_CACHE_NVAL ) error("index out-of-bound:", ___vname__##_ip_idxptr[___i__]); \
   IPv4 ___vname__##_ip_elt_ptr = RIP_cache_ipv4_val[___vname__##_ip_idxptr[___i__]];
-
  
 #else
-
  
 #define RIPv4cache_ELT_PTR_DCL(___vname__, ___i__ )  \
   IPv4 ___vname__##_ip_elt_ptr = ( (IPv4*) ___vname__##_hip.h.iptb)[___vname__##_ip_idxptr[___i__] -1 ]; \
-  
  
 #endif
 
@@ -575,8 +630,13 @@
   ___vname__##_ip_elt[0] = ___vname__##_ip_lo_ptr[___vname__##_ip_idxptr[___i__]]; \
   ___vname__##_ip_elt[1] = ___vname__##_ip_hi_ptr[___vname__##_ip_idxptr[___i__]]; \
   IPv4  *___vname__##_ip_elt_ptr = (IPv4 *) &___vname__##_ip_elt; \
-  
+
  
+#define RIPv4r_VAL_DGET(___vname__, ___suff__, ___i__ ) \
+  IPv4   ___vname__##___suff__##_ip_elt[2]; \
+  ___vname__##___suff__##_ip_elt[0] = ___vname__##_ip_lo_ptr[___vname__##_ip_idxptr[___i__]]; \
+  ___vname__##___suff__##_ip_elt[1] = ___vname__##_ip_hi_ptr[___vname__##_ip_idxptr[___i__]]; 
+
 #define RIPv4r_PTR_LO(___vname__) \
   ___vname__[0]
  
@@ -673,11 +733,13 @@
   
  
 #define RIPv4_IS_NA_WARN_REPROTECT(___vname__, ___nip__, ___opname__) \
+{ \
   int len = ___vname__##_ip_idx+1; \
+  \
     \
     \
    \
-  if( (len)!= ___nip__ ){ \
+  if( (len)!= ___nip__ ){   \
      warning("%d NA introduced during " ___opname__ " operation", ___nip__ - ___vname__##_ip_idx - 1 ); \
       \
       \
@@ -686,7 +748,8 @@
      \
 if(dbg>0)Rprintf("  cp:%d %d\n",len, ___vname__##_nipv4);  \
     if( len!=___vname__##_nipv4 ) REPROTECT(___vname__##_ipv4 = lengthgets( ___vname__##_ipv4, len ), ___vname__##_ip_protidx); \
-  }
+  } \
+}
   
  
 #define RIPv4cache_IS_NA_WARN_REPROTECT(___vname__, ___nip__, ___opname__) \
@@ -709,24 +772,27 @@ if(dbg>0)Rprintf("  cp:%d %d\n",len, ___vname__##_nipv4);  \
   
  
 #define RIPv6_IS_NA_WARN_REPROTECT(___vname__, ___nip__, ___opname__) \
+{ \
   int len = ___vname__##_ip_idx+1; \
   \
     \
   \
-  if( (len)!= ___nip__ ){ warning("%d NA introduced during " ___opname__ " operation", ___nip__ - len ); \
+  if( (len)!= ___nip__ ){  warning("%d NA introduced during " ___opname__ " operation", ___nip__ - len ); \
       \
        \
       \
       \
     if( len!=___vname__##_nipv6 ){ \
-if(dbg>0)Rprintf("  cp:%d %d\n",len, ___vname__##_nipv6);  \
+  \
        \
       REPROTECT(___vname__##_ipv6 = arraycp(___vname__##_ipv6, ___vname__##_nip, 2, len), ___vname__##_ip_protidx);  \
     } \
   } \
+}
   
  
 #define RIPv6r_IS_NA_WARN_REPROTECT(___vname__, ___nip__, ___opname__) \
+{ \
   \
   int len = ___vname__##_ip_idx+1; \
   \
@@ -739,6 +805,7 @@ if(dbg>0)Rprintf("  cp:%d %d\n",len, ___vname__##_nipv6);  \
      \
     REPROTECT(___vname__##_ipv6r = arraycp(___vname__##_ipv6r, ___vname__##_nip, 4, len), ___vname__##_ip_protidx); \
   } \
+}
   
  
 #define RIPv4_SLOTS_SET(___vname__) \
@@ -782,7 +849,7 @@ Rprintf("  <set>len:%d %d \n", len, ___nip__);  \
 Rprintf("  <set-ipv4>\n");   \
     ___vname__ = SET_SLOT(___vname__, Rip_ipv4Sym, ___vname__##_ipv4 );   \
   } \
-  Free( ___vname__##_ip_ptr );
+  R_Free( ___vname__##_ip_ptr );
   
  
 #define RIPv4r_SLOTS_SET(___vname__) \

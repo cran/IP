@@ -7,10 +7,6 @@
 %%
 %%
 %%
-\alias{ip.capabilities}
-%%
-%%
-%%
 \alias{length}
 \alias{length,IPv4-method}
 \alias{length,IPv4r-method}

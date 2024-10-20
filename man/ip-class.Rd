@@ -289,6 +289,10 @@
   Note that in order to avoid undesirable side-effects, \code{is.numeric()} returns \code{FALSE}
 }
 %%
+\note{
+  \code{ipv4()} uses the SIMD SSE instructions set to input IPv4 addresses if the IP package was compiled with the \code{"--enable-avx2"} flag.
+}
+%%
 \examples{
 ##
 ipv4("0.0.0.0")==ipv4(0L)

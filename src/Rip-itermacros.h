@@ -50,6 +50,7 @@
   }
 
 #define RIP_IP_ID_CP(___Rip_dst__, ___src__) \
+{ \
   SEXP ___src__##_Rid=NULL; \
   if( \
        isNull(                  GET_SLOT(___Rip_dst__, Rip_idSym ) ) \
@@ -57,6 +58,7 @@
   ){ \
     if( LENGTH( ___src__##_Rid )==___Rip_dst__##_nip ) ___Rip_dst__ = SET_SLOT(___Rip_dst__, Rip_idSym, duplicate( ___src__##_Rid ) );\
   } \
+}
 
 #define RIP_Rvec_IDSLOT_CP(___dst__,___Rip_src__) \
   SEXP ___Rip_src__##_Rid = NULL; \
@@ -120,10 +122,10 @@ if (dbg) Rprintf("  " STRINGIFY(___fname__) " <nip>%d\n", nip); \
     } \
     RIP##___IPv__##_RES_DCL(res) \
       \
- \
     valid = ___fn__( RIP_##___R_t__##_ELT_GET( Rvec, i ), resptr); \
+ \
     if(valid){ \
-      RIP##___IPv__##_ITER_SET( Rip, i, res) \
+      RIP##___IPv__##_ITER_SET( Rip, i, res)   \
     } \
     else{ \
       Rip_ip_idxptr[i] = NA_INTEGER; \
@@ -401,8 +403,9 @@ SEXP Rip_ip##___IPv__##_op2_arith_##___opname__##_0( \
   if( (Rip_nip==Rip2_nip) && ( Rip_nip==RIP##___IPv__##_IP_LEN_GET(Rip) ) && ( RIP##___IPv__##_IP_LEN_GET(Rip)==RIP##___IPv__##_IP_LEN_GET(Rip2) )){ \
  \
     for(i=0; i < Rip_nip; i++ ){ \
-      RIP##___IPv__##_ELT_PTR_DCL(Rip, i) \
-      RIP##___IPv__##_ELT_PTR_DCL(Rip2, i) \
+        \
+      RIP##___IPv__##_ELT_DPTR_DCL(Rip, i) \
+      RIP##___IPv__##_ELT_DPTR_DCL(Rip2, i) \
       RIP##___IPv__##_RES_DCL(res) \
       int valid = ___fn__( \
          Rip_ip_elt_ptr, Rip2_ip_elt_ptr, resptr \
@@ -478,8 +481,8 @@ SEXP Rip_ip##___IPvRes__##_op2_arith_##___IPv1__##_##___opname__##_##___IPv2__##
       continue; \
     } \
      \
-    RIP##___IPv1__##_ELT_PTR_DCL(Rip, i1) \
-    RIP##___IPv2__##_ELT_PTR_DCL(Rip2, i2) \
+    RIP##___IPv1__##_ELT_DPTR_DCL(Rip, i1) \
+    RIP##___IPv2__##_ELT_DPTR_DCL(Rip2, i2) \
     RIP##___IPvRes__##_RES_DCL(res) \
     int valid = ___fn__( \
        Rip_ip_elt_ptr, Rip2_ip_elt_ptr, resptr \
@@ -536,8 +539,9 @@ SEXP Rip_ip##___IPv__##_op2_bool_##___opname__##_0( \
   if( (Rip1_nip==Rip2_nip) && ( Rip1_nip==RIP##___IPv__##_IP_LEN_GET(Rip1) ) && ( RIP##___IPv__##_IP_LEN_GET(Rip1)==RIP##___IPv__##_IP_LEN_GET(Rip2) ) ){ \
   \
     for(i=0; i < Rip1_nip; i++ ){ \
-      RIP##___IPv__##_ELT_PTR_DCL(Rip1, i) \
-      RIP##___IPv__##_ELT_PTR_DCL(Rip2, i) \
+        \
+      RIP##___IPv__##_ELT_DPTR_DCL(Rip1, i) \
+      RIP##___IPv__##_ELT_DPTR_DCL(Rip2, i) \
       resptr[i] = ___fn__( \
          Rip1_ip_elt_ptr \
          , Rip2_ip_elt_ptr \
@@ -556,19 +560,20 @@ if(dbg) Rprintf("  [%d] <>%d %d" " <>%d %d\n",  i, i1, Rip1##_ip_idxptr[i1], i2,
         || ( Rip2_ip_idxptr[i2]==NA_INTEGER ) \
       ){ \
         resptr[i] = NA_INTEGER; \
-        continue; \
-      } \
-      RIP##___IPv__##_ELT_PTR_DCL(Rip1, idx1) \
-      RIP##___IPv__##_ELT_PTR_DCL(Rip2, idx2) \
-      RIP_CHECK_IDX(Rip1##_ip_idxptr, idx1, nip) \
-      RIP_CHECK_IDX(Rip2##_ip_idxptr, idx2, nip)     \
-        \
+          \
+      } else{ \
+        RIP##___IPv__##_ELT_PTR_DCL(Rip1, idx1) \
+        RIP##___IPv__##_ELT_PTR_DCL(Rip2, idx2) \
+        RIP_CHECK_IDX(Rip1##_ip_idxptr, idx1, nip) \
+        RIP_CHECK_IDX(Rip2##_ip_idxptr, idx2, nip)     \
+          \
   \
-      resptr[i] = ___fn__( \
-         Rip1_ip_elt_ptr \
-         , Rip2_ip_elt_ptr \
-      );  \
-        \
+        resptr[i] = ___fn__( \
+           Rip1_ip_elt_ptr \
+           , Rip2_ip_elt_ptr \
+        );  \
+          \
+      } \
     } \
   } \
     \
