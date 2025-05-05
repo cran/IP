@@ -1,4 +1,4 @@
-43be3678be012cc3e7c88bb393469a9e *DESCRIPTION
+fe700c74aac1fbac5aa4707164abab53 *DESCRIPTION
 73bc0a4e25d71b749772053a963b7d33 *INSTALL
 211372ee06bc903b1da2d7aba422658f *NAMESPACE
 f102f692586c67e40c7b1f0faea9bb4d *R/Rip-AllClass.R
@@ -9,15 +9,15 @@ b0e5ec537d2d37bd678b09bf1b0160ad *R/Rip-ipv4.R
 8a3103b85332e49cb8b5c37a4b0b1bb9 *R/Rip-ipv6.R
 2f73d418f394b3e2646d77691350bb16 *R/Rip-utils.R
 74d98522a55fe976a7ab1b9993ac6391 *R/sysdata.rda
-ffdd0003e9e3815771a89f6ca01164c7 *README
-58ec21ad0b9c953b3cec880048f4cb0d *build/vignette.rds
+0a24105eeb41e613b74c237985841ccd *README.md
+8f25ad178a1fd47617587851e102bfeb *build/vignette.rds
 ec8294e5cb22b760bc8600e0cc35ce08 *cleanup
 a84d39ad2f6a822d3caa2854ee6fad99 *configure
 de2f1db13ac9321e7977ff4f52709249 *configure.ac
 4bea2f036c52f144979a10b181032e1a *inst/doc/ip-host.Rmd
-25ad1d83faf2b29ad002b1d2bf6a3a1f *inst/doc/ip-host.html
+90b1d9645d50249d09f58f0202e939ef *inst/doc/ip-host.html
 61d1a1dc82eb59c8e660949c4254ca67 *inst/doc/ip-intro.Rmd
-c73bb847db96b47f1c4a5d531b016ea4 *inst/doc/ip-intro.html
+d40eddca3627391f1e79d12ee726ceaa *inst/doc/ip-intro.html
 c7a6c2bf0c3358fd71a9ee8480c36b43 *man/Arith-methods.Rd
 c001fead7a7826eca1e2c1f01a8146ef *man/Bitwise-methods.Rd
 8d903f722418d8d292196b3557fce289 *man/Compare-methods.Rd
