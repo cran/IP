@@ -1,8 +1,8 @@
 Package: IP
 Type: Package
 Title: Classes and Methods for 'IP' Addresses
-Version: 0.1.5
-Date: 2025-04-30
+Version: 0.1.6
+Date: 2025-05-07
 Authors@R: 
     c(person(
     given = "Thomas"
@@ -24,9 +24,9 @@ SystemRequirements: libidn: libidn11-dev (deb)
 NeedsCompilation: yes
 Depends: R (>= 4.1.0), methods
 Imports: stringi
-Suggests: knitr
+Suggests: knitr, rmarkdown, markdown
 VignetteBuilder: knitr
 Encoding: UTF-8
-Packaged: 2025-04-30 22:02:37 UTC; user
+Packaged: 2025-05-07 14:58:01 UTC; user
 Repository: CRAN
-Date/Publication: 2025-05-05 09:50:06 UTC
+Date/Publication: 2025-05-07 16:50:12 UTC

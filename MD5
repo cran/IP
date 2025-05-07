@@ -1,4 +1,4 @@
-fe700c74aac1fbac5aa4707164abab53 *DESCRIPTION
+8611a5484b666408ac798ee8a808932b *DESCRIPTION
 73bc0a4e25d71b749772053a963b7d33 *INSTALL
 211372ee06bc903b1da2d7aba422658f *NAMESPACE
 f102f692586c67e40c7b1f0faea9bb4d *R/Rip-AllClass.R
@@ -36,7 +36,7 @@ ee74ffa62b42deb58dd713955e4f8af6 *src/Rip-R-macros.h
 4af744e11276a2c006135fd05485bd0a *src/Rip-host-info.c
 29347f1ae00f080cbc71e0953a6443da *src/Rip-io-internal.c
 cb00381c320e518d490d500858620244 *src/Rip-itermacros.h
-7c183ba360cc8fa81fe6c92d0875661b *src/Rip-match.c
+c03e9dbe80c99d01d5d441dd6b1536e1 *src/Rip-match.c
 5f36688df79354b6c6ece6974c4cfdf4 *src/Rip-op-arith.c
 4e2cfff1c2d09fcd0ee3ad1437dc7fbb *src/Rip-op-bool.c
 e52faa7a9c732933f4e2b27055599802 *src/Rip-op-mask.c
